@@ -32,6 +32,15 @@ defmodule PortfolioCore.Ports.PipelineTest do
       assert {:validate_input, 1} in optional
       assert {:estimated_duration, 0} in optional
     end
+
+    test "defines enhanced optional callbacks" do
+      optional = Pipeline.behaviour_info(:optional_callbacks)
+
+      assert {:parallel?, 0} in optional
+      assert {:on_error, 0} in optional
+      assert {:timeout, 0} in optional
+      assert {:cache_ttl, 0} in optional
+    end
   end
 
   describe "typespecs" do

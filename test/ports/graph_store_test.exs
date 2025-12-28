@@ -128,4 +128,18 @@ defmodule PortfolioCore.Ports.GraphStoreTest do
       assert {:ok, ^stats} = MockGraphStore.graph_stats("knowledge")
     end
   end
+
+  describe "behaviour - enhanced callbacks" do
+    alias PortfolioCore.Ports.GraphStore
+
+    test "defines community operations as optional callbacks" do
+      optional = GraphStore.behaviour_info(:optional_callbacks)
+      assert {:traverse, 3} in optional
+      assert {:vector_search, 3} in optional
+      assert {:create_community, 3} in optional
+      assert {:get_community_members, 2} in optional
+      assert {:update_community_summary, 3} in optional
+      assert {:list_communities, 2} in optional
+    end
+  end
 end

@@ -38,6 +38,7 @@ defmodule PortfolioCore.Ports.Retriever do
   @type context :: map()
 
   @type retrieved_item :: %{
+          id: term(),
           content: String.t(),
           score: float(),
           source: String.t(),
@@ -88,4 +89,26 @@ defmodule PortfolioCore.Ports.Retriever do
     - List of port names this retriever depends on
   """
   @callback required_adapters() :: [atom()]
+
+  @doc """
+  Indicate whether this retriever supports embedding-based queries.
+
+  ## Returns
+
+    - `true` if embedding queries are supported
+    - `false` otherwise
+  """
+  @callback supports_embedding?() :: boolean()
+
+  @doc """
+  Indicate whether this retriever supports text-based queries.
+
+  ## Returns
+
+    - `true` if text queries are supported
+    - `false` otherwise
+  """
+  @callback supports_text_query?() :: boolean()
+
+  @optional_callbacks [supports_embedding?: 0, supports_text_query?: 0]
 end

@@ -104,4 +104,44 @@ defmodule PortfolioCore.Ports.Router do
   Get current routing strategy.
   """
   @callback get_strategy() :: strategy()
+
+  @doc """
+  Route to a provider and execute the request.
+
+  Combines provider selection and request execution in one call.
+
+  ## Parameters
+
+    - `messages` - Chat messages to process
+    - `opts` - Options including strategy and task type
+
+  ## Returns
+
+    - `{:ok, response}` with provider response
+    - `{:error, reason}` on failure
+  """
+  @callback execute(messages :: [map()], opts :: route_opts()) ::
+              {:ok, map()} | {:error, term()}
+
+  @doc """
+  Execute with automatic retry on failure.
+
+  Tries next available provider if current one fails.
+
+  ## Parameters
+
+    - `messages` - Chat messages to process
+    - `opts` - Options:
+      - `:max_retries` - Maximum retry attempts
+      - `:retry_delay` - Delay between retries in ms
+
+  ## Returns
+
+    - `{:ok, response}` with provider response
+    - `{:error, reason}` if all providers fail
+  """
+  @callback execute_with_retry(messages :: [map()], opts :: route_opts()) ::
+              {:ok, map()} | {:error, term()}
+
+  @optional_callbacks [execute: 2, execute_with_retry: 2]
 end

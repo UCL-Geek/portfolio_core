@@ -26,7 +26,7 @@ Portfolio Core provides the foundational primitives for building RAG (Retrieval-
 
 ## Features
 
-### Port Specifications (13 total)
+### Port Specifications (14 total)
 
 **Storage Ports:**
 - `VectorStore` - Vector similarity search
@@ -40,12 +40,15 @@ Portfolio Core provides the foundational primitives for building RAG (Retrieval-
 - `Retriever` - Retrieval strategies
 - `Reranker` - Result reranking
 
-**Infrastructure Ports (NEW in v0.2.0):**
+**Infrastructure Ports:**
 - `Router` - Multi-provider LLM routing
 - `Cache` - Caching layer abstraction
 - `Pipeline` - Workflow step definitions
 - `Agent` - Tool-using agent behavior
 - `Tool` - Individual tool definitions
+
+**Evaluation (NEW in v0.3.0):**
+- `Evaluation` - RAG quality evaluation (RAG Triad, hallucination detection)
 
 ## Installation
 
@@ -54,7 +57,7 @@ Add `portfolio_core` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:portfolio_core, "~> 0.2.0"}
+    {:portfolio_core, "~> 0.3.0"}
   ]
 end
 ```

@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2025-12-28
+
+### Added
+- `PortfolioCore.Ports.Evaluation` - RAG quality evaluation port
+  - `evaluate_rag_triad/2` - Context relevance, groundedness, answer relevance
+  - `detect_hallucination/2` - Hallucination detection
+- GraphStore community operations for GraphRAG support
+  - `traverse/3` - BFS/DFS graph traversal
+  - `vector_search/3` - Embedding-based node search
+  - `create_community/3` - Community creation
+  - `get_community_members/2` - Member retrieval
+  - `update_community_summary/3` - LLM summary storage
+  - `list_communities/2` - Community enumeration
+- Chunker byte position tracking (`start_byte`, `end_byte`)
+- Chunker strategy type union and `supported_strategies/0` callback
+- Retriever capability detection (`supports_embedding?/0`, `supports_text_query?/0`)
+- VectorStore fulltext search (`fulltext_search/4`)
+- VectorStore RRF score calculation (`calculate_rrf_score/3`)
+- Pipeline parallel execution (`parallel?/0`)
+- Pipeline error handling modes (`on_error/0`)
+- Pipeline timeout and cache TTL (`timeout/0`, `cache_ttl/0`)
+- Router execute callbacks (`execute/2`, `execute_with_retry/2`)
+- Reranker score normalization (`normalize_scores/1`)
+- Cache compute-if-absent pattern (`compute_if_absent/3`)
+- Cache pattern invalidation (`invalidate_pattern/2`)
+- Agent session-based API (`process/3`, `process_with_tools/4`)
+- New telemetry events for evaluation and community operations
+
+### Changed
+- `Chunker.chunk` type now includes `start_byte` and `end_byte` fields
+- `Retriever.retrieved_item` type now includes `id` field
+- `Reranker.reranked_item` type now includes `id` field
+- Port count increased from 13 to 14
+
 ## [0.2.0] - 2025-12-27
 
 ### Added
@@ -72,7 +106,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Concrete adapter implementations should use `portfolio_index` package
 - No database schemas, migrations, or external API calls included
 
-[Unreleased]: https://github.com/nshkrdotcom/portfolio_core/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/nshkrdotcom/portfolio_core/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/nshkrdotcom/portfolio_core/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/nshkrdotcom/portfolio_core/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/nshkrdotcom/portfolio_core/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/nshkrdotcom/portfolio_core/releases/tag/v0.1.0

@@ -122,4 +122,18 @@ defmodule PortfolioCore.Ports.VectorStoreTest do
       assert {:ok, ^stats} = MockVectorStore.index_stats("test_index")
     end
   end
+
+  describe "behaviour - enhanced callbacks" do
+    alias PortfolioCore.Ports.VectorStore
+
+    test "defines fulltext_search as optional callback" do
+      optional = VectorStore.behaviour_info(:optional_callbacks)
+      assert {:fulltext_search, 4} in optional
+    end
+
+    test "defines calculate_rrf_score as optional callback" do
+      optional = VectorStore.behaviour_info(:optional_callbacks)
+      assert {:calculate_rrf_score, 3} in optional
+    end
+  end
 end

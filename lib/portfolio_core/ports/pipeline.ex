@@ -29,6 +29,8 @@ defmodule PortfolioCore.Ports.Pipeline do
 
   @type step_status :: :pending | :running | :completed | :failed | :skipped
 
+  @type on_error :: :halt | :continue | {:retry, pos_integer()}
+
   @type step_result ::
           {:ok, term()}
           | {:error, term()}
@@ -81,5 +83,52 @@ defmodule PortfolioCore.Ports.Pipeline do
   """
   @callback estimated_duration() :: pos_integer()
 
-  @optional_callbacks [validate_input: 1, estimated_duration: 0]
+  @doc """
+  Indicate whether this step can run in parallel with other steps.
+
+  ## Returns
+
+    - `true` if this step can run concurrently
+    - `false` if it must run sequentially
+  """
+  @callback parallel?() :: boolean()
+
+  @doc """
+  Define error handling behavior for this step.
+
+  ## Returns
+
+    - `:halt` - Stop pipeline on error
+    - `:continue` - Skip step and continue
+    - `{:retry, n}` - Retry up to n times
+  """
+  @callback on_error() :: on_error()
+
+  @doc """
+  Get the timeout for this step in milliseconds.
+
+  ## Returns
+
+    - Timeout in milliseconds
+  """
+  @callback timeout() :: pos_integer()
+
+  @doc """
+  Get the cache TTL for this step.
+
+  ## Returns
+
+    - `:infinity` for permanent caching
+    - Milliseconds for time-limited caching
+  """
+  @callback cache_ttl() :: pos_integer() | :infinity
+
+  @optional_callbacks [
+    validate_input: 1,
+    estimated_duration: 0,
+    parallel?: 0,
+    on_error: 0,
+    timeout: 0,
+    cache_ttl: 0
+  ]
 end

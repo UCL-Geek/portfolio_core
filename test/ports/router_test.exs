@@ -29,7 +29,8 @@ defmodule PortfolioCore.Ports.RouterTest do
 
     test "defines optional callbacks" do
       optional = Router.behaviour_info(:optional_callbacks)
-      assert optional == []
+      assert {:execute, 2} in optional
+      assert {:execute_with_retry, 2} in optional
     end
   end
 

@@ -54,7 +54,7 @@ defmodule PortfolioCore.Manifest.Schema do
         doc: "Manifest schema version"
       ],
       environment: [
-        type: :atom,
+        type: {:custom, __MODULE__, :to_atom, []},
         required: true,
         doc: "Target environment (:dev, :test, :prod)"
       ],
@@ -67,8 +67,12 @@ defmodule PortfolioCore.Manifest.Schema do
         type: :map,
         doc: "Router configuration",
         keys: [
-          strategy: [type: {:in, [:fallback, :round_robin, :specialist, :cost_optimized]}],
-          health_check_interval: [type: :pos_integer, default: 30_000],
+          strategy: [
+            type:
+              {:custom, __MODULE__, :validate_strategy,
+               [[:fallback, :round_robin, :specialist, :cost_optimized]]}
+          ],
+          health_check_interval: [type: :non_neg_integer, default: 30_000],
           providers: [type: {:list, :map}]
         ]
       ],
@@ -77,7 +81,9 @@ defmodule PortfolioCore.Manifest.Schema do
         doc: "Cache configuration",
         keys: [
           enabled: [type: :boolean, default: true],
-          backend: [type: {:in, [:ets, :redis, :mnesia]}],
+          backend: [
+            type: {:custom, __MODULE__, :validate_strategy, [[:ets, :redis, :mnesia]]}
+          ],
           default_ttl: [type: :pos_integer, default: 3600],
           namespaces: [type: :map]
         ]
@@ -88,7 +94,7 @@ defmodule PortfolioCore.Manifest.Schema do
         keys: [
           max_iterations: [type: :pos_integer, default: 10],
           timeout: [type: :pos_integer, default: 300_000],
-          tools: [type: {:list, :atom}]
+          tools: [type: {:list, {:custom, __MODULE__, :to_atom, []}}]
         ]
       ],
       pipelines: [
@@ -176,5 +182,36 @@ defmodule PortfolioCore.Manifest.Schema do
   @spec schema_definition() :: keyword()
   def schema_definition do
     manifest_schema()
+  end
+
+  @doc """
+  Convert a string or atom to an atom.
+  Used as custom type validator for NimbleOptions.
+  """
+  @spec to_atom(term()) :: {:ok, atom()} | {:error, String.t()}
+  def to_atom(value) when is_atom(value), do: {:ok, value}
+  def to_atom(value) when is_binary(value), do: {:ok, String.to_atom(value)}
+  def to_atom(value), do: {:error, "expected atom or string, got: #{inspect(value)}"}
+
+  @doc """
+  Validate a strategy value against allowed options.
+  Accepts strings and converts them to atoms before validation.
+  """
+  @spec validate_strategy(term(), [atom()]) :: {:ok, atom()} | {:error, String.t()}
+  def validate_strategy(value, allowed) when is_atom(value) do
+    if value in allowed do
+      {:ok, value}
+    else
+      {:error, "expected one of #{inspect(allowed)}, got: #{inspect(value)}"}
+    end
+  end
+
+  def validate_strategy(value, allowed) when is_binary(value) do
+    atom_value = String.to_atom(value)
+    validate_strategy(atom_value, allowed)
+  end
+
+  def validate_strategy(value, allowed) do
+    {:error, "expected one of #{inspect(allowed)}, got: #{inspect(value)}"}
   end
 end

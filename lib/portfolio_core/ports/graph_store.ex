@@ -54,6 +54,16 @@ defmodule PortfolioCore.Ports.GraphStore do
           records: [map()]
         }
 
+  @type traversal_algorithm :: :bfs | :dfs
+
+  @type community :: %{
+          id: String.t(),
+          name: String.t(),
+          summary: String.t() | nil,
+          member_count: non_neg_integer(),
+          level: non_neg_integer()
+        }
+
   @doc """
   Create a new graph namespace.
 
@@ -219,4 +229,136 @@ defmodule PortfolioCore.Ports.GraphStore do
   """
   @callback graph_stats(graph_id()) ::
               {:ok, map()} | {:error, term()}
+
+  @doc """
+  Traverse the graph from a starting node.
+
+  ## Parameters
+
+    - `graph_id` - The graph to traverse
+    - `node_id` - Starting node
+    - `opts` - Traversal options:
+      - `:direction` - `:outgoing`, `:incoming`, or `:both`
+      - `:max_depth` - Maximum traversal depth
+      - `:algorithm` - `:bfs` or `:dfs`
+      - `:edge_types` - Filter by edge types
+      - `:limit` - Maximum nodes to return
+
+  ## Returns
+
+    - `{:ok, nodes}` - List of traversed nodes
+    - `{:error, reason}` on failure
+  """
+  @callback traverse(graph_id(), node_id(), opts :: keyword()) ::
+              {:ok, [graph_node()]} | {:error, term()}
+
+  @doc """
+  Search for nodes by vector similarity.
+
+  Requires nodes to have embeddings stored in properties.
+
+  ## Parameters
+
+    - `graph_id` - The graph to search
+    - `embedding` - Query embedding vector
+    - `opts` - Search options:
+      - `:k` - Number of results
+      - `:labels` - Filter by node labels
+      - `:min_score` - Minimum similarity score
+
+  ## Returns
+
+    - `{:ok, nodes}` - Matching nodes sorted by similarity
+    - `{:error, reason}` on failure
+  """
+  @callback vector_search(graph_id(), embedding :: [float()], opts :: keyword()) ::
+              {:ok, [graph_node()]} | {:error, term()}
+
+  @doc """
+  Create a community (cluster of related nodes).
+
+  Communities enable hierarchical graph summarization for GraphRAG.
+
+  ## Parameters
+
+    - `graph_id` - The target graph
+    - `community_id` - Unique community identifier
+    - `opts` - Community options:
+      - `:name` - Human-readable name
+      - `:level` - Hierarchy level (0 = leaf)
+      - `:member_ids` - Initial member node IDs
+
+  ## Returns
+
+    - `:ok` on success
+    - `{:error, reason}` on failure
+  """
+  @callback create_community(graph_id(), community_id :: String.t(), opts :: keyword()) ::
+              :ok | {:error, term()}
+
+  @doc """
+  Get member node IDs for a community.
+
+  ## Parameters
+
+    - `graph_id` - The graph to query
+    - `community_id` - The community identifier
+
+  ## Returns
+
+    - `{:ok, node_ids}` - List of member node IDs
+    - `{:error, reason}` on failure
+  """
+  @callback get_community_members(graph_id(), community_id :: String.t()) ::
+              {:ok, [node_id()]} | {:error, term()}
+
+  @doc """
+  Update the LLM-generated summary for a community.
+
+  Summaries enable global search over community themes.
+
+  ## Parameters
+
+    - `graph_id` - The target graph
+    - `community_id` - The community to update
+    - `summary` - LLM-generated summary text
+
+  ## Returns
+
+    - `:ok` on success
+    - `{:error, reason}` on failure
+  """
+  @callback update_community_summary(
+              graph_id(),
+              community_id :: String.t(),
+              summary :: String.t()
+            ) ::
+              :ok | {:error, term()}
+
+  @doc """
+  List all communities in a graph.
+
+  ## Parameters
+
+    - `graph_id` - The graph to query
+    - `opts` - List options:
+      - `:level` - Filter by hierarchy level
+      - `:limit` - Maximum communities to return
+
+  ## Returns
+
+    - `{:ok, communities}` - List of community metadata
+    - `{:error, reason}` on failure
+  """
+  @callback list_communities(graph_id(), opts :: keyword()) ::
+              {:ok, [community()]} | {:error, term()}
+
+  @optional_callbacks [
+    traverse: 3,
+    vector_search: 3,
+    create_community: 3,
+    get_community_members: 2,
+    update_community_summary: 3,
+    list_communities: 2
+  ]
 end

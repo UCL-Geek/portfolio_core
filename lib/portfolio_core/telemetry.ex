@@ -55,6 +55,24 @@ defmodule PortfolioCore.Telemetry do
     [:portfolio_core, :agent, :tool, :execute]
   ]
 
+  @evaluation_events [
+    [:portfolio_core, :evaluation, :rag_triad, :start],
+    [:portfolio_core, :evaluation, :rag_triad, :stop],
+    [:portfolio_core, :evaluation, :rag_triad, :exception],
+    [:portfolio_core, :evaluation, :hallucination, :start],
+    [:portfolio_core, :evaluation, :hallucination, :stop],
+    [:portfolio_core, :evaluation, :hallucination, :exception]
+  ]
+
+  @graph_events [
+    [:portfolio_core, :graph_store, :traverse, :start],
+    [:portfolio_core, :graph_store, :traverse, :stop],
+    [:portfolio_core, :graph_store, :vector_search, :start],
+    [:portfolio_core, :graph_store, :vector_search, :stop],
+    [:portfolio_core, :graph_store, :community, :create],
+    [:portfolio_core, :graph_store, :community, :update_summary]
+  ]
+
   @doc """
   Execute a function wrapped in telemetry span.
 
@@ -161,7 +179,12 @@ defmodule PortfolioCore.Telemetry do
       # Registry events
       [:portfolio_core, :registry, :register],
       [:portfolio_core, :registry, :lookup]
-    ] ++ @router_events ++ @cache_events ++ @agent_events
+    ] ++
+      @router_events ++
+      @cache_events ++
+      @agent_events ++
+      @evaluation_events ++
+      @graph_events
   end
 
   @doc """

@@ -34,9 +34,19 @@ defmodule PortfolioCore.Ports.Chunker do
   @type text :: String.t()
   @type format :: :plain | :markdown | :code | :html
 
+  @type strategy ::
+          :character
+          | :sentence
+          | :paragraph
+          | :recursive
+          | :semantic
+          | :format_aware
+
   @type chunk :: %{
           content: String.t(),
           index: non_neg_integer(),
+          start_byte: non_neg_integer(),
+          end_byte: non_neg_integer(),
           start_offset: non_neg_integer(),
           end_offset: non_neg_integer(),
           metadata: map()
@@ -84,4 +94,15 @@ defmodule PortfolioCore.Ports.Chunker do
   """
   @callback estimate_chunks(text(), chunk_config()) ::
               non_neg_integer()
+
+  @doc """
+  Get list of chunking strategies supported by this adapter.
+
+  ## Returns
+
+    - List of supported strategy atoms
+  """
+  @callback supported_strategies() :: [strategy()]
+
+  @optional_callbacks [supported_strategies: 0]
 end

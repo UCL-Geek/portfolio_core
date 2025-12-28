@@ -35,6 +35,7 @@ defmodule PortfolioCore.Ports.Reranker do
   @type item :: %{content: String.t(), score: float(), metadata: map()}
 
   @type reranked_item :: %{
+          id: term(),
           content: String.t(),
           original_score: float(),
           rerank_score: float(),
@@ -68,4 +69,21 @@ defmodule PortfolioCore.Ports.Reranker do
     - String identifying the model
   """
   @callback model_name() :: String.t()
+
+  @doc """
+  Normalize rerank scores to 0-1 range.
+
+  Useful for combining with other scoring systems.
+
+  ## Parameters
+
+    - `items` - List of reranked items
+
+  ## Returns
+
+    - Items with normalized rerank_score values
+  """
+  @callback normalize_scores([reranked_item()]) :: [reranked_item()]
+
+  @optional_callbacks [normalize_scores: 1]
 end

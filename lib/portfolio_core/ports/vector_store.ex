@@ -197,5 +197,54 @@ defmodule PortfolioCore.Ports.VectorStore do
   """
   @callback index_exists?(index_id()) :: boolean()
 
-  @optional_callbacks [index_exists?: 1]
+  @doc """
+  Perform full-text search on stored content.
+
+  ## Parameters
+
+    - `index_id` - The index to search
+    - `query` - Text query string
+    - `k` - Number of results to return
+    - `opts` - Search options:
+      - `:filter` - Metadata filter
+      - `:min_score` - Minimum relevance score
+
+  ## Returns
+
+    - `{:ok, results}` - List of search results
+    - `{:error, reason}` on failure
+  """
+  @callback fulltext_search(
+              index_id(),
+              query :: String.t(),
+              k :: pos_integer(),
+              opts :: keyword()
+            ) ::
+              {:ok, [search_result()]} | {:error, term()}
+
+  @doc """
+  Calculate Reciprocal Rank Fusion score for hybrid search results.
+
+  Combines semantic and fulltext results using RRF algorithm.
+
+  ## Parameters
+
+    - `semantic_results` - Results from semantic search
+    - `fulltext_results` - Results from fulltext search
+    - `opts` - RRF options:
+      - `:k` - RRF constant (default 60)
+      - `:semantic_weight` - Weight for semantic results
+      - `:fulltext_weight` - Weight for fulltext results
+
+  ## Returns
+
+    - Merged and reranked results
+  """
+  @callback calculate_rrf_score(
+              semantic_results :: [search_result()],
+              fulltext_results :: [search_result()],
+              opts :: keyword()
+            ) :: [search_result()]
+
+  @optional_callbacks [index_exists?: 1, fulltext_search: 4, calculate_rrf_score: 3]
 end

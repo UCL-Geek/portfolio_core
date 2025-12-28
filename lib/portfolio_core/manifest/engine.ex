@@ -267,7 +267,7 @@ defmodule PortfolioCore.Manifest.Engine do
   defp get_config_value(config, key) when is_list(config), do: Keyword.get(config, key)
 
   # Keys whose string values should be converted to atoms
-  @atom_value_keys [:environment, :adapter]
+  @atom_value_keys [:environment, :adapter, :strategy, :backend]
 
   defp atomize_keys(map) when is_map(map) do
     Map.new(map, fn

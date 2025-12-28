@@ -66,6 +66,14 @@ defmodule PortfolioCore.Ports.Agent do
           content: String.t()
         }
 
+  @type session :: %{
+          id: String.t(),
+          messages: [message()],
+          tool_results: [tool_result()],
+          created_at: DateTime.t(),
+          updated_at: DateTime.t()
+        }
+
   @type run_opts :: [
           tools: [atom()],
           max_iterations: pos_integer(),
@@ -100,5 +108,50 @@ defmodule PortfolioCore.Ports.Agent do
   """
   @callback get_state() :: agent_state()
 
-  @optional_callbacks [get_state: 0]
+  @doc """
+  Process input within a session context.
+
+  Maintains conversation history across calls.
+
+  ## Parameters
+
+    - `session` - Current session state
+    - `input` - User input to process
+    - `opts` - Processing options
+
+  ## Returns
+
+    - `{:ok, response, updated_session}` on success
+    - `{:error, reason}` on failure
+  """
+  @callback process(session(), input :: String.t(), opts :: keyword()) ::
+              {:ok, String.t(), session()} | {:error, term()}
+
+  @doc """
+  Process input with tool execution within a session.
+
+  Runs the tool execution loop until completion or max iterations.
+
+  ## Parameters
+
+    - `session` - Current session state
+    - `input` - User input to process
+    - `tools` - List of tool modules to use
+    - `opts` - Processing options:
+      - `:max_iterations` - Maximum tool execution iterations
+
+  ## Returns
+
+    - `{:ok, response, updated_session}` on success
+    - `{:error, reason}` on failure
+  """
+  @callback process_with_tools(
+              session(),
+              input :: String.t(),
+              tools :: [atom()],
+              opts :: keyword()
+            ) ::
+              {:ok, String.t(), session()} | {:error, term()}
+
+  @optional_callbacks [get_state: 0, process: 3, process_with_tools: 4]
 end

@@ -31,7 +31,8 @@ defmodule PortfolioCore.Ports.CacheTest do
 
     test "defines optional callbacks" do
       optional = Cache.behaviour_info(:optional_callbacks)
-      assert optional == []
+      assert {:compute_if_absent, 3} in optional
+      assert {:invalidate_pattern, 2} in optional
     end
   end
 

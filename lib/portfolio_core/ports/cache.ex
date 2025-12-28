@@ -94,4 +94,41 @@ defmodule PortfolioCore.Ports.Cache do
   """
   @callback touch(key(), ttl(), opts :: cache_opts()) ::
               :ok | {:error, :not_found}
+
+  @doc """
+  Get value if exists, otherwise compute and store.
+
+  Implements the cache-aside pattern atomically.
+
+  ## Parameters
+
+    - `key` - Cache key
+    - `compute_fn` - Zero-arity function to compute value if missing
+    - `opts` - Cache options including TTL
+
+  ## Returns
+
+    - `{:ok, value}` - Cached or computed value
+    - `{:error, reason}` on failure
+  """
+  @callback compute_if_absent(key(), compute_fn :: (-> value()), opts :: cache_opts()) ::
+              {:ok, value()} | {:error, term()}
+
+  @doc """
+  Invalidate all keys matching a pattern.
+
+  ## Parameters
+
+    - `pattern` - Glob or regex pattern to match keys
+    - `opts` - Cache options including namespace
+
+  ## Returns
+
+    - `{:ok, count}` - Number of keys invalidated
+    - `{:error, reason}` on failure
+  """
+  @callback invalidate_pattern(pattern :: String.t(), opts :: cache_opts()) ::
+              {:ok, non_neg_integer()} | {:error, term()}
+
+  @optional_callbacks [compute_if_absent: 3, invalidate_pattern: 2]
 end

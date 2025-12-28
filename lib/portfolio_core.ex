@@ -60,7 +60,7 @@ defmodule PortfolioCore do
 
       ```elixir
       defp deps do
-        [{:portfolio_core, "~> 0.2.0"}]
+        [{:portfolio_core, "~> 0.3.0"}]
       end
       ```
 
@@ -112,6 +112,7 @@ defmodule PortfolioCore do
   - `PortfolioCore.Ports.Pipeline` - Pipeline step definitions
   - `PortfolioCore.Ports.Agent` - Tool-using agent behavior
   - `PortfolioCore.Ports.Tool` - Individual tool definitions
+  - `PortfolioCore.Ports.Evaluation` - RAG quality evaluation
   """
 
   alias PortfolioCore.Manifest.Engine
