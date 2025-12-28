@@ -110,7 +110,7 @@ defmodule PortfolioCore.Manifest.Loader do
   """
   @spec expand_env_vars(term()) :: {:ok, term()} | {:error, term()}
   def expand_env_vars(value) when is_binary(value) do
-    case Regex.scan(~r/\$\{(\w+)\}/, value) do
+    case Regex.scan(~r/\$\{([^}]+)\}/, value) do
       [] ->
         {:ok, value}
 
@@ -152,10 +152,17 @@ defmodule PortfolioCore.Manifest.Loader do
 
   # Private functions
 
-  defp substitute_env_var([full, var_name], acc) do
-    case System.get_env(var_name) do
-      nil -> {:halt, {:error, {:missing_env_var, var_name}}}
-      val -> {:cont, String.replace(acc, full, val)}
+  defp substitute_env_var([full, var_spec], acc) do
+    case String.split(var_spec, ":-", parts: 2) do
+      [var_name, default] ->
+        value = System.get_env(var_name) || default
+        {:cont, String.replace(acc, full, value)}
+
+      [var_name] ->
+        case System.get_env(var_name) do
+          nil -> {:halt, {:error, {:missing_env_var, var_name}}}
+          val -> {:cont, String.replace(acc, full, val)}
+        end
     end
   end
 

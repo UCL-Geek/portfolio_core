@@ -31,7 +31,7 @@ Add `portfolio_core` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:portfolio_core, "~> 0.1.0"}
+    {:portfolio_core, "~> 0.1.1"}
   ]
 end
 ```

@@ -73,6 +73,11 @@ defmodule PortfolioCore.Manifest.Schema do
         default: %{},
         doc: "Graph configurations"
       ],
+      rag: [
+        type: {:or, [:map, :keyword_list]},
+        default: %{},
+        doc: "RAG strategy configuration"
+      ],
       telemetry: [
         type: {:or, [:map, :keyword_list]},
         default: %{},

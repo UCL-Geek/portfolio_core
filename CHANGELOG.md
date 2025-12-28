@@ -7,7 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.1.0] - 2024-12-26
+## [0.1.1] - 2025-12-27
+
+### Added
+
+- Default value support for environment variables with `${VAR:-default}` syntax
+- RAG strategy configuration field in manifest schema
+
+### Changed
+
+- Enhanced environment variable regex to support default value syntax
+
+## [0.1.0] - 2025-12-26
 
 ### Added
 
@@ -45,5 +56,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Concrete adapter implementations should use `portfolio_index` package
 - No database schemas, migrations, or external API calls included
 
-[Unreleased]: https://github.com/nshkrdotcom/portfolio_core/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/nshkrdotcom/portfolio_core/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/nshkrdotcom/portfolio_core/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/nshkrdotcom/portfolio_core/releases/tag/v0.1.0
