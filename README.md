@@ -26,11 +26,13 @@ Portfolio Core provides the foundational primitives for building RAG (Retrieval-
 
 ## Features
 
-### Port Specifications (14 total)
+### Port Specifications (16 total)
 
 **Storage Ports:**
 - `VectorStore` - Vector similarity search
+- `VectorStore.Hybrid` - Hybrid semantic + fulltext search
 - `GraphStore` - Knowledge graph operations
+- `GraphStore.Community` - GraphRAG community operations
 - `DocumentStore` - Document storage and retrieval
 
 **AI Ports:**

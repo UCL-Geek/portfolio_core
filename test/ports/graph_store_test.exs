@@ -132,14 +132,18 @@ defmodule PortfolioCore.Ports.GraphStoreTest do
   describe "behaviour - enhanced callbacks" do
     alias PortfolioCore.Ports.GraphStore
 
-    test "defines community operations as optional callbacks" do
+    test "defines traversal as required and vector search as optional" do
+      callbacks = GraphStore.behaviour_info(:callbacks)
       optional = GraphStore.behaviour_info(:optional_callbacks)
-      assert {:traverse, 3} in optional
+
+      assert {:traverse, 3} in callbacks
+      refute {:traverse, 3} in optional
+
       assert {:vector_search, 3} in optional
-      assert {:create_community, 3} in optional
-      assert {:get_community_members, 2} in optional
-      assert {:update_community_summary, 3} in optional
-      assert {:list_communities, 2} in optional
+      refute {:create_community, 3} in optional
+      refute {:get_community_members, 2} in optional
+      refute {:update_community_summary, 3} in optional
+      refute {:list_communities, 2} in optional
     end
   end
 end

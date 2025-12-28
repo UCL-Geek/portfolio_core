@@ -31,6 +31,12 @@ defmodule PortfolioCore.Ports.VectorStore do
   - IVF (Inverted File Index)
   - HNSW (Hierarchical Navigable Small World)
   - Flat (exact search)
+
+  ## Hybrid Retrieval
+
+  For stores that support fulltext search, implement
+  `PortfolioCore.Ports.VectorStore.Hybrid` and use
+  `PortfolioCore.VectorStore.RRF.calculate_rrf_score/3` to merge rankings.
   """
 
   @type index_id :: String.t()
@@ -200,6 +206,9 @@ defmodule PortfolioCore.Ports.VectorStore do
   @doc """
   Perform full-text search on stored content.
 
+  For hybrid retrieval adapters, also implement
+  `PortfolioCore.Ports.VectorStore.Hybrid`.
+
   ## Parameters
 
     - `index_id` - The index to search
@@ -222,29 +231,5 @@ defmodule PortfolioCore.Ports.VectorStore do
             ) ::
               {:ok, [search_result()]} | {:error, term()}
 
-  @doc """
-  Calculate Reciprocal Rank Fusion score for hybrid search results.
-
-  Combines semantic and fulltext results using RRF algorithm.
-
-  ## Parameters
-
-    - `semantic_results` - Results from semantic search
-    - `fulltext_results` - Results from fulltext search
-    - `opts` - RRF options:
-      - `:k` - RRF constant (default 60)
-      - `:semantic_weight` - Weight for semantic results
-      - `:fulltext_weight` - Weight for fulltext results
-
-  ## Returns
-
-    - Merged and reranked results
-  """
-  @callback calculate_rrf_score(
-              semantic_results :: [search_result()],
-              fulltext_results :: [search_result()],
-              opts :: keyword()
-            ) :: [search_result()]
-
-  @optional_callbacks [index_exists?: 1, fulltext_search: 4, calculate_rrf_score: 3]
+  @optional_callbacks [index_exists?: 1, fulltext_search: 4]
 end

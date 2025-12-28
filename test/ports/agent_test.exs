@@ -23,13 +23,15 @@ defmodule PortfolioCore.Ports.AgentTest do
       assert {:execute_tool, 1} in callbacks
       assert {:max_iterations, 0} in callbacks
       assert {:get_state, 0} in callbacks
+      assert {:process, 3} in callbacks
+      assert {:process_with_tools, 4} in callbacks
     end
 
     test "defines optional callbacks" do
       optional = Agent.behaviour_info(:optional_callbacks)
       assert {:get_state, 0} in optional
-      assert {:process, 3} in optional
-      assert {:process_with_tools, 4} in optional
+      refute {:process, 3} in optional
+      refute {:process_with_tools, 4} in optional
     end
   end
 

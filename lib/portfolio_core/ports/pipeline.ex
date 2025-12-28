@@ -9,7 +9,7 @@ defmodule PortfolioCore.Ports.Pipeline do
   ## Example Implementation
 
       defmodule MyApp.PipelineSteps.Embed do
-        @behaviour PortfolioCore.Ports.Pipeline
+        use PortfolioCore.Ports.Pipeline
 
         @impl true
         def execute(context, _config) do
@@ -25,7 +25,48 @@ defmodule PortfolioCore.Ports.Pipeline do
         @impl true
         def cacheable?, do: true
       end
+
+  ## Default Step Hints
+
+  Using `PortfolioCore.Ports.Pipeline` provides defaults for:
+  - `parallel?/0` (false)
+  - `on_error/0` (:halt)
+  - `timeout/0` (30_000 ms)
+  - `cache_ttl/0` (:infinity)
+
+  Override defaults by passing options to `use` or by implementing the callbacks:
+
+      use PortfolioCore.Ports.Pipeline, parallel?: true, timeout: 5_000
   """
+
+  @default_pipeline_opts [
+    parallel?: false,
+    on_error: :halt,
+    timeout: 30_000,
+    cache_ttl: :infinity
+  ]
+
+  defmacro __using__(opts \\ []) do
+    defaults = Keyword.merge(@default_pipeline_opts, opts)
+
+    quote do
+      @behaviour PortfolioCore.Ports.Pipeline
+
+      @impl true
+      def parallel?, do: unquote(defaults[:parallel?])
+
+      @impl true
+      def on_error, do: unquote(defaults[:on_error])
+
+      @impl true
+      def timeout, do: unquote(defaults[:timeout])
+
+      @impl true
+      def cache_ttl, do: unquote(defaults[:cache_ttl])
+
+      defoverridable parallel?: 0, on_error: 0, timeout: 0, cache_ttl: 0
+    end
+  end
 
   @type step_status :: :pending | :running | :completed | :failed | :skipped
 
@@ -125,10 +166,6 @@ defmodule PortfolioCore.Ports.Pipeline do
 
   @optional_callbacks [
     validate_input: 1,
-    estimated_duration: 0,
-    parallel?: 0,
-    on_error: 0,
-    timeout: 0,
-    cache_ttl: 0
+    estimated_duration: 0
   ]
 end

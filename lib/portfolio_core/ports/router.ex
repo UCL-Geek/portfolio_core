@@ -143,5 +143,5 @@ defmodule PortfolioCore.Ports.Router do
   @callback execute_with_retry(messages :: [map()], opts :: route_opts()) ::
               {:ok, map()} | {:error, term()}
 
-  @optional_callbacks [execute: 2, execute_with_retry: 2]
+  @optional_callbacks [execute_with_retry: 2]
 end

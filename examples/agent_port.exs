@@ -68,6 +68,26 @@ defmodule Examples.SimpleAgent do
     Agent.get(__MODULE__, & &1)
   end
 
+  @impl true
+  def process(session, input, _opts) do
+    timestamp = DateTime.utc_now()
+    response = "processed: #{input}"
+
+    updated_session =
+      session
+      |> Map.update(:messages, [], fn messages ->
+        messages ++ [%{role: :user, content: input}, %{role: :assistant, content: response}]
+      end)
+      |> Map.put(:updated_at, timestamp)
+
+    {:ok, response, updated_session}
+  end
+
+  @impl true
+  def process_with_tools(session, input, _tools, opts) do
+    process(session, input, opts)
+  end
+
   defp default_state do
     %{
       task: "",

@@ -27,51 +27,58 @@ defmodule PortfolioCore.Ports.Agent do
   """
 
   @type tool_spec :: %{
-          name: atom(),
-          description: String.t(),
-          parameters: [parameter_spec()],
-          required: [atom()]
+          required(:name) => atom(),
+          required(:description) => String.t(),
+          required(:parameters) => [parameter_spec()],
+          optional(:required) => [atom()],
+          optional(:execute) => (map() -> term())
         }
 
   @type parameter_spec :: %{
-          name: atom(),
-          type: :string | :integer | :boolean | :list | :map,
-          description: String.t(),
-          required: boolean()
+          required(:name) => atom(),
+          required(:type) => :string | :integer | :boolean | :list | :map,
+          required(:description) => String.t(),
+          optional(:required) => boolean()
         }
 
   @type tool_call :: %{
-          id: String.t(),
-          tool: atom(),
-          arguments: map()
+          optional(:id) => String.t(),
+          required(:tool) => atom(),
+          required(:arguments) => map()
         }
 
   @type tool_result :: %{
-          id: String.t(),
-          tool: atom(),
-          result: term(),
-          success: boolean()
+          optional(:id) => String.t(),
+          required(:tool) => atom(),
+          required(:result) => term(),
+          optional(:success) => boolean(),
+          optional(:timestamp) => DateTime.t()
         }
 
   @type agent_state :: %{
-          task: String.t(),
-          memory: [message()],
-          tool_calls: [tool_call()],
-          tool_results: [tool_result()],
-          iteration: non_neg_integer()
+          optional(:task) => String.t(),
+          optional(:memory) => [message()],
+          optional(:tool_calls) => [tool_call()],
+          optional(:tool_results) => [tool_result()],
+          optional(:iteration) => non_neg_integer()
         }
 
   @type message :: %{
-          role: :user | :assistant | :tool,
-          content: String.t()
+          required(:role) => :user | :assistant | :tool,
+          required(:content) => String.t(),
+          optional(:timestamp) => DateTime.t(),
+          optional(:tool_name) => atom(),
+          optional(:error) => term()
         }
 
   @type session :: %{
-          id: String.t(),
-          messages: [message()],
-          tool_results: [tool_result()],
-          created_at: DateTime.t(),
-          updated_at: DateTime.t()
+          required(:id) => String.t(),
+          required(:messages) => [message()],
+          optional(:tool_results) => [tool_result()],
+          optional(:context) => map(),
+          optional(:metadata) => map(),
+          required(:created_at) => DateTime.t(),
+          optional(:updated_at) => DateTime.t()
         }
 
   @type run_opts :: [
@@ -153,5 +160,5 @@ defmodule PortfolioCore.Ports.Agent do
             ) ::
               {:ok, String.t(), session()} | {:error, term()}
 
-  @optional_callbacks [get_state: 0, process: 3, process_with_tools: 4]
+  @optional_callbacks [get_state: 0]
 end

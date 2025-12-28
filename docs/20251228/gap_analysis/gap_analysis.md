@@ -164,8 +164,6 @@ defstruct [:content, :start_byte, :end_byte, :metadata]
 # NEW callbacks for capability detection
 @callback supports_embedding?() :: boolean()
 @callback supports_text_query?() :: boolean()
-
-@optional_callbacks [supports_embedding?: 0, supports_text_query?: 0]
 ```
 
 ---
@@ -307,7 +305,7 @@ end
 | Gap ID | Description | Severity | Resolution |
 |--------|-------------|----------|------------|
 | VEC-01 | Missing `fulltext_search/3` callback | **High** | Add for hybrid retrieval support |
-| VEC-02 | Missing `calculate_rrf_score/3` helper | Medium | Add optional callback or utility |
+| VEC-02 | Missing `calculate_rrf_score/3` helper | Medium | Add helper module and hybrid capability |
 | VEC-03 | No Ecto query builder pattern | Low | Different design - OK for hex arch |
 
 **Recommended Changes**:
@@ -317,14 +315,22 @@ end
 @callback fulltext_search(index_id(), query :: String.t(), k :: pos_integer(), opts :: keyword()) ::
   {:ok, [search_result()]} | {:error, term()}
 
-# NEW callback for RRF score calculation (optional)
-@callback calculate_rrf_score(
-  semantic_results :: [search_result()],
-  fulltext_results :: [search_result()],
-  opts :: keyword()
-) :: [search_result()]
+@optional_callbacks [fulltext_search: 4]
+```
 
-@optional_callbacks [fulltext_search: 4, calculate_rrf_score: 3]
+**Hybrid Retrieval Helper**:
+
+```elixir
+PortfolioCore.VectorStore.RRF.calculate_rrf_score(semantic_results, fulltext_results, opts)
+```
+
+**Hybrid Capability Behavior**:
+
+```elixir
+defmodule PortfolioCore.Ports.VectorStore.Hybrid do
+  @callback fulltext_search(index_id(), query :: String.t(), k :: pos_integer(), opts :: keyword()) ::
+    {:ok, [search_result()]} | {:error, term()}
+end
 ```
 
 ---
@@ -377,25 +383,16 @@ end
 |--------|-------------|----------|------------|
 | GRF-01 | Missing `traverse/3` callback (BFS/DFS) | **Critical** | Add callback with algorithm option |
 | GRF-02 | Missing `vector_search/3` callback | **Critical** | Add for entity embedding search |
-| GRF-03 | Missing `create_community/3` callback | **Critical** | Add for GraphRAG community detection |
-| GRF-04 | Missing `get_community_members/2` callback | **Critical** | Add for community retrieval |
-| GRF-05 | Missing `update_community_summary/3` callback | **Critical** | Add for LLM-generated summaries |
-| GRF-06 | Missing `list_communities/2` callback | **High** | Add for community enumeration |
+| GRF-03 | Missing community operations | **Critical** | Add `GraphStore.Community` behavior |
+| GRF-04 | Missing `get_community_members/2` callback | **Critical** | Add in `GraphStore.Community` |
+| GRF-05 | Missing `update_community_summary/3` callback | **Critical** | Add in `GraphStore.Community` |
+| GRF-06 | Missing `list_communities/2` callback | **High** | Add in `GraphStore.Community` |
 
 **Recommended Changes**:
 
 ```elixir
 # Traversal algorithm type
 @type traversal_algorithm :: :bfs | :dfs
-
-# Community type
-@type community :: %{
-  id: String.t(),
-  name: String.t(),
-  summary: String.t() | nil,
-  member_count: non_neg_integer(),
-  level: non_neg_integer()
-}
 
 # NEW: Graph traversal callback
 @doc """
@@ -414,27 +411,33 @@ Traverse the graph from a starting node.
 @callback vector_search(graph_id(), embedding :: [float()], opts :: keyword()) ::
   {:ok, [graph_node()]} | {:error, term()}
 
-# NEW: Community operations
-@callback create_community(graph_id(), community_id :: String.t(), opts :: keyword()) ::
-  :ok | {:error, term()}
+@optional_callbacks [vector_search: 3]
+```
 
-@callback get_community_members(graph_id(), community_id :: String.t()) ::
-  {:ok, [node_id()]} | {:error, term()}
+**GraphRAG Community Behavior**:
 
-@callback update_community_summary(graph_id(), community_id :: String.t(), summary :: String.t()) ::
-  :ok | {:error, term()}
+```elixir
+defmodule PortfolioCore.Ports.GraphStore.Community do
+  @type community :: %{
+    id: String.t(),
+    name: String.t(),
+    summary: String.t() | nil,
+    member_count: non_neg_integer(),
+    level: non_neg_integer()
+  }
 
-@callback list_communities(graph_id(), opts :: keyword()) ::
-  {:ok, [community()]} | {:error, term()}
+  @callback create_community(graph_id(), community_id :: String.t(), opts :: keyword()) ::
+    :ok | {:error, term()}
 
-@optional_callbacks [
-  traverse: 3,
-  vector_search: 3,
-  create_community: 3,
-  get_community_members: 2,
-  update_community_summary: 3,
-  list_communities: 2
-]
+  @callback get_community_members(graph_id(), community_id :: String.t()) ::
+    {:ok, [node_id()]} | {:error, term()}
+
+  @callback update_community_summary(graph_id(), community_id :: String.t(), summary :: String.t()) ::
+    :ok | {:error, term()}
+
+  @callback list_communities(graph_id(), opts :: keyword()) ::
+    {:ok, [community()]} | {:error, term()}
+end
 ```
 
 ---
@@ -528,13 +531,6 @@ end
 @callback on_error() :: on_error()
 @callback timeout() :: pos_integer()
 @callback cache_ttl() :: pos_integer() | :infinity
-
-@optional_callbacks [
-  parallel?: 0,
-  on_error: 0,
-  timeout: 0,
-  cache_ttl: 0
-]
 ```
 
 ---
@@ -638,7 +634,7 @@ end
 @callback execute_with_retry(messages :: [map()], opts :: route_opts()) ::
   {:ok, response :: map()} | {:error, term()}
 
-@optional_callbacks [execute: 2, execute_with_retry: 2]
+@optional_callbacks [execute_with_retry: 2]
 ```
 
 ---
@@ -704,7 +700,6 @@ end
 @callback process_with_tools(session(), input :: String.t(), tools :: [atom()], opts :: keyword()) ::
   {:ok, response :: String.t(), session()} | {:error, term()}
 
-@optional_callbacks [process: 3, process_with_tools: 4]
 ```
 
 ---
@@ -792,12 +787,6 @@ defmodule PortfolioCore.Ports.Evaluation do
   """
   @callback detect_hallucination(generation(), opts :: keyword()) ::
     {:ok, %{hallucinating: boolean(), evidence: String.t()}} | {:error, term()}
-
-  @optional_callbacks [
-    evaluate_context_relevance: 2,
-    evaluate_groundedness: 2,
-    evaluate_answer_relevance: 2
-  ]
 end
 ```
 
@@ -851,9 +840,9 @@ end
 |----|------|-------------|
 | GRF-01 | GraphStore | Missing `traverse/3` callback |
 | GRF-02 | GraphStore | Missing `vector_search/3` callback |
-| GRF-03 | GraphStore | Missing `create_community/3` callback |
-| GRF-04 | GraphStore | Missing `get_community_members/2` callback |
-| GRF-05 | GraphStore | Missing `update_community_summary/3` callback |
+| GRF-03 | GraphStore.Community | Missing community operations behavior |
+| GRF-04 | GraphStore.Community | Missing `get_community_members/2` callback |
+| GRF-05 | GraphStore.Community | Missing `update_community_summary/3` callback |
 | CHK-01 | Chunker | Missing byte position tracking |
 | EVL-01 | Evaluation | Missing entire port |
 
@@ -866,7 +855,7 @@ end
 | RET-02 | Retriever | Missing `supports_embedding?/0` |
 | RET-03 | Retriever | Missing `supports_text_query?/0` |
 | VEC-01 | VectorStore | Missing `fulltext_search/3` |
-| GRF-06 | GraphStore | Missing `list_communities/2` |
+| GRF-06 | GraphStore.Community | Missing `list_communities/2` |
 | PIP-01 | Pipeline | Missing `parallel` flag |
 | PIP-02 | Pipeline | Missing `on_error` handling |
 | RTR-01 | Router | Missing `execute/2` callback |
@@ -879,7 +868,7 @@ end
 | CHK-04 | Chunker | Format vs strategy API |
 | RRK-01 | Reranker | Missing `id` field |
 | RRK-02 | Reranker | Missing `normalize_scores/1` |
-| VEC-02 | VectorStore | Missing `calculate_rrf_score/3` |
+| VEC-02 | VectorStore | Missing RRF helper for hybrid scoring |
 | PIP-03 | Pipeline | Missing `timeout` spec |
 | PIP-04 | Pipeline | Missing cache TTL spec |
 | CAC-01 | Cache | Missing `compute_if_absent/3` |
@@ -904,10 +893,10 @@ end
 
 ```
 [ ] 1. Create Evaluation port (EVL-01)
-[ ] 2. Update GraphStore port with community operations (GRF-01 to GRF-06)
+[ ] 2. Update GraphStore port and add GraphStore.Community behavior (GRF-01 to GRF-06)
 [ ] 3. Update Chunker port with byte positions and strategies (CHK-01 to CHK-04)
 [ ] 4. Update Retriever port with id and capability callbacks (RET-01 to RET-03)
-[ ] 5. Update VectorStore port with fulltext search (VEC-01, VEC-02)
+[ ] 5. Update VectorStore port with fulltext search and hybrid helper (VEC-01, VEC-02)
 [ ] 6. Update Pipeline port with parallel and error handling (PIP-01 to PIP-04)
 [ ] 7. Update Router port with execute callback (RTR-01, RTR-02)
 [ ] 8. Update Reranker port with id and normalize (RRK-01 to RRK-03)

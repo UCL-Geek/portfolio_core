@@ -100,7 +100,9 @@ defmodule PortfolioCore do
   Ports are Elixir behaviors that define contracts for adapters:
 
   - `PortfolioCore.Ports.VectorStore` - Vector storage and similarity search
+  - `PortfolioCore.Ports.VectorStore.Hybrid` - Hybrid semantic + fulltext search
   - `PortfolioCore.Ports.GraphStore` - Graph database operations
+  - `PortfolioCore.Ports.GraphStore.Community` - GraphRAG community operations
   - `PortfolioCore.Ports.DocumentStore` - Document storage
   - `PortfolioCore.Ports.Embedder` - Embedding generation
   - `PortfolioCore.Ports.LLM` - Language model completions

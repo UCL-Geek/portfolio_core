@@ -161,10 +161,4 @@ defmodule PortfolioCore.Ports.Evaluation do
   """
   @callback detect_hallucination(generation(), opts :: keyword()) ::
               {:ok, hallucination_result()} | {:error, term()}
-
-  @optional_callbacks [
-    evaluate_context_relevance: 2,
-    evaluate_groundedness: 2,
-    evaluate_answer_relevance: 2
-  ]
 end

@@ -1,5 +1,12 @@
 ExUnit.start()
 
+Code.require_file(
+  Path.join(
+    __DIR__,
+    "support/portfolio_index/adapters/graph_store/neo4j/community.exs"
+  )
+)
+
 # Define mocks for all ports
 Mox.defmock(PortfolioCore.Mocks.VectorStore, for: PortfolioCore.Ports.VectorStore)
 Mox.defmock(PortfolioCore.Mocks.GraphStore, for: PortfolioCore.Ports.GraphStore)

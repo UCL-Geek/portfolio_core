@@ -25,12 +25,13 @@ defmodule PortfolioCore.Ports.RouterTest do
       assert {:list_providers, 0} in callbacks
       assert {:set_strategy, 1} in callbacks
       assert {:get_strategy, 0} in callbacks
+      assert {:execute, 2} in callbacks
     end
 
     test "defines optional callbacks" do
       optional = Router.behaviour_info(:optional_callbacks)
-      assert {:execute, 2} in optional
       assert {:execute_with_retry, 2} in optional
+      refute {:execute, 2} in optional
     end
   end
 

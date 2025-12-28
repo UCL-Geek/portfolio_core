@@ -19,10 +19,15 @@ defmodule PortfolioCore.Ports.RetrieverTest do
       assert {:required_adapters, 0} in callbacks
     end
 
-    test "defines capability callbacks as optional" do
+    test "defines capability callbacks as required" do
+      callbacks = Retriever.behaviour_info(:callbacks)
       optional = Retriever.behaviour_info(:optional_callbacks)
-      assert {:supports_embedding?, 0} in optional
-      assert {:supports_text_query?, 0} in optional
+
+      assert {:supports_embedding?, 0} in callbacks
+      assert {:supports_text_query?, 0} in callbacks
+
+      refute {:supports_embedding?, 0} in optional
+      refute {:supports_text_query?, 0} in optional
     end
   end
 

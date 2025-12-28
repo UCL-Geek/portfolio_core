@@ -109,6 +109,4 @@ defmodule PortfolioCore.Ports.Retriever do
     - `false` otherwise
   """
   @callback supports_text_query?() :: boolean()
-
-  @optional_callbacks [supports_embedding?: 0, supports_text_query?: 0]
 end

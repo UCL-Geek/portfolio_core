@@ -37,6 +37,13 @@ defmodule Examples.SimpleRouter do
   end
 
   @impl true
+  def execute(messages, opts) do
+    with {:ok, provider} <- route(messages, opts) do
+      {:ok, %{provider: provider.name, messages: messages}}
+    end
+  end
+
+  @impl true
   def register_provider(provider) do
     Agent.update(__MODULE__, fn state ->
       providers =

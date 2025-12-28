@@ -60,7 +60,7 @@ The gap analysis identified **17 gaps** between portfolio_core ports and rag_ex 
 **This is a ports-only library.** We are adding:
 - New type definitions
 - New callback specifications
-- New optional callbacks
+- New callback specifications (required or optional as appropriate)
 - Documentation updates
 
 We are NOT adding:
@@ -197,12 +197,6 @@ defmodule PortfolioCore.Ports.Evaluation do
   """
   @callback detect_hallucination(generation(), opts :: keyword()) ::
               {:ok, hallucination_result()} | {:error, term()}
-
-  @optional_callbacks [
-    evaluate_context_relevance: 2,
-    evaluate_groundedness: 2,
-    evaluate_answer_relevance: 2
-  ]
 end
 ```
 
@@ -225,11 +219,17 @@ defmodule PortfolioCore.Ports.EvaluationTest do
       assert {:detect_hallucination, 2} in callbacks
     end
 
-    test "defines optional callbacks for individual evaluations" do
+    test "defines individual dimension callbacks as required" do
+      callbacks = Evaluation.behaviour_info(:callbacks)
       optional = Evaluation.behaviour_info(:optional_callbacks)
-      assert {:evaluate_context_relevance, 2} in optional
-      assert {:evaluate_groundedness, 2} in optional
-      assert {:evaluate_answer_relevance, 2} in optional
+
+      assert {:evaluate_context_relevance, 2} in callbacks
+      assert {:evaluate_groundedness, 2} in callbacks
+      assert {:evaluate_answer_relevance, 2} in callbacks
+
+      refute {:evaluate_context_relevance, 2} in optional
+      refute {:evaluate_groundedness, 2} in optional
+      refute {:evaluate_answer_relevance, 2} in optional
     end
   end
 end
@@ -301,81 +301,33 @@ Requires nodes to have embeddings stored in properties.
 """
 @callback vector_search(graph_id(), embedding :: [float()], opts :: keyword()) ::
             {:ok, [graph_node()]} | {:error, term()}
+@optional_callbacks [vector_search: 3]
+```
 
-@doc """
-Create a community (cluster of related nodes).
+**GraphStore.Community Behavior**:
 
-Communities enable hierarchical graph summarization for GraphRAG.
+```elixir
+defmodule PortfolioCore.Ports.GraphStore.Community do
+  @type community :: %{
+          id: String.t(),
+          name: String.t(),
+          summary: String.t() | nil,
+          member_count: non_neg_integer(),
+          level: non_neg_integer()
+        }
 
-## Parameters
+  @callback create_community(graph_id(), community_id :: String.t(), opts :: keyword()) ::
+              :ok | {:error, term()}
 
-  - `graph_id` - The target graph
-  - `community_id` - Unique community identifier
-  - `opts` - Community options:
-    - `:name` - Human-readable name
-    - `:level` - Hierarchy level (0 = leaf)
-    - `:member_ids` - Initial member node IDs
+  @callback get_community_members(graph_id(), community_id :: String.t()) ::
+              {:ok, [node_id()]} | {:error, term()}
 
-## Returns
+  @callback update_community_summary(graph_id(), community_id :: String.t(), summary :: String.t()) ::
+              :ok | {:error, term()}
 
-  - `:ok` on success
-  - `{:error, reason}` on failure
-"""
-@callback create_community(graph_id(), community_id :: String.t(), opts :: keyword()) ::
-            :ok | {:error, term()}
-
-@doc """
-Get member node IDs for a community.
-"""
-@callback get_community_members(graph_id(), community_id :: String.t()) ::
-            {:ok, [node_id()]} | {:error, term()}
-
-@doc """
-Update the LLM-generated summary for a community.
-
-Summaries enable global search over community themes.
-
-## Parameters
-
-  - `graph_id` - The target graph
-  - `community_id` - The community to update
-  - `summary` - LLM-generated summary text
-
-## Returns
-
-  - `:ok` on success
-  - `{:error, reason}` on failure
-"""
-@callback update_community_summary(graph_id(), community_id :: String.t(), summary :: String.t()) ::
-            :ok | {:error, term()}
-
-@doc """
-List all communities in a graph.
-
-## Parameters
-
-  - `graph_id` - The graph to query
-  - `opts` - List options:
-    - `:level` - Filter by hierarchy level
-    - `:limit` - Maximum communities to return
-
-## Returns
-
-  - `{:ok, communities}` - List of community metadata
-  - `{:error, reason}` on failure
-"""
-@callback list_communities(graph_id(), opts :: keyword()) ::
-            {:ok, [community()]} | {:error, term()}
-
-# Update optional_callbacks at the end
-@optional_callbacks [
-  traverse: 3,
-  vector_search: 3,
-  create_community: 3,
-  get_community_members: 2,
-  update_community_summary: 3,
-  list_communities: 2
-]
+  @callback list_communities(graph_id(), opts :: keyword()) ::
+              {:ok, [community()]} | {:error, term()}
+end
 ```
 
 ---
@@ -448,8 +400,6 @@ Indicate whether this retriever supports embedding-based queries.
 Indicate whether this retriever supports text-based queries.
 """
 @callback supports_text_query?() :: boolean()
-
-@optional_callbacks [supports_embedding?: 0, supports_text_query?: 0]
 ```
 
 ---
@@ -458,7 +408,7 @@ Indicate whether this retriever supports text-based queries.
 
 **File**: `/home/home/p/g/n/portfolio_core/lib/portfolio_core/ports/vector_store.ex`
 
-Add fulltext search and RRF support:
+Add fulltext search support:
 
 ```elixir
 # Add after existing callbacks
@@ -483,31 +433,20 @@ Perform full-text search on stored content.
 @callback fulltext_search(index_id(), query :: String.t(), k :: pos_integer(), opts :: keyword()) ::
             {:ok, [search_result()]} | {:error, term()}
 
-@doc """
-Calculate Reciprocal Rank Fusion score for hybrid search results.
+@optional_callbacks [fulltext_search: 4]
+```
 
-Combines semantic and fulltext results using RRF algorithm.
+Add hybrid helpers:
 
-## Parameters
+```elixir
+# RRF helper module
+PortfolioCore.VectorStore.RRF.calculate_rrf_score(semantic_results, fulltext_results, opts)
 
-  - `semantic_results` - Results from semantic search
-  - `fulltext_results` - Results from fulltext search
-  - `opts` - RRF options:
-    - `:k` - RRF constant (default 60)
-    - `:semantic_weight` - Weight for semantic results
-    - `:fulltext_weight` - Weight for fulltext results
-
-## Returns
-
-  - Merged and reranked results
-"""
-@callback calculate_rrf_score(
-            semantic_results :: [search_result()],
-            fulltext_results :: [search_result()],
-            opts :: keyword()
-          ) :: [search_result()]
-
-@optional_callbacks [fulltext_search: 4, calculate_rrf_score: 3]
+# Capability behavior for stores that support fulltext search
+defmodule PortfolioCore.Ports.VectorStore.Hybrid do
+  @callback fulltext_search(index_id(), query :: String.t(), k :: pos_integer(), opts :: keyword()) ::
+              {:ok, [search_result()]} | {:error, term()}
+end
 ```
 
 ---
@@ -548,8 +487,6 @@ Get the cache TTL for this step.
 Returns `:infinity` for permanent caching or milliseconds.
 """
 @callback cache_ttl() :: pos_integer() | :infinity
-
-@optional_callbacks [parallel?: 0, on_error: 0, timeout: 0, cache_ttl: 0]
 ```
 
 ---
@@ -601,7 +538,7 @@ Tries next available provider if current one fails.
 @callback execute_with_retry(messages :: [map()], opts :: route_opts()) ::
             {:ok, map()} | {:error, term()}
 
-@optional_callbacks [execute: 2, execute_with_retry: 2]
+@optional_callbacks [execute_with_retry: 2]
 ```
 
 ---
@@ -727,8 +664,6 @@ Runs the tool execution loop until completion or max iterations.
 """
 @callback process_with_tools(session(), input :: String.t(), tools :: [atom()], opts :: keyword()) ::
             {:ok, String.t(), session()} | {:error, term()}
-
-@optional_callbacks [process: 3, process_with_tools: 4]
 ```
 
 ---
@@ -787,8 +722,9 @@ Update installation section:
 ```
 
 Update feature list to include:
-- 14 port specifications (add Evaluation)
-- GraphRAG community operations
+- 14 core port specifications (add Evaluation)
+- GraphStore.Community behavior for GraphRAG community operations
+- VectorStore hybrid capability and RRF helper
 - Enhanced chunker with byte positions
 - Evaluation and hallucination detection
 
@@ -807,18 +743,14 @@ Add at top after `[Unreleased]`:
 - `PortfolioCore.Ports.Evaluation` - RAG quality evaluation port
   - `evaluate_rag_triad/2` - Context relevance, groundedness, answer relevance
   - `detect_hallucination/2` - Hallucination detection
-- GraphStore community operations for GraphRAG support
-  - `traverse/3` - BFS/DFS graph traversal
-  - `vector_search/3` - Embedding-based node search
-  - `create_community/3` - Community creation
-  - `get_community_members/2` - Member retrieval
-  - `update_community_summary/3` - LLM summary storage
-  - `list_communities/2` - Community enumeration
+- GraphStore traversal (`traverse/3`) and optional vector search (`vector_search/3`)
+- `GraphStore.Community` behavior for community operations
 - Chunker byte position tracking (`start_byte`, `end_byte`)
 - Chunker strategy type union and `supported_strategies/0` callback
 - Retriever capability detection (`supports_embedding?/0`, `supports_text_query?/0`)
 - VectorStore fulltext search (`fulltext_search/4`)
-- VectorStore RRF score calculation (`calculate_rrf_score/3`)
+- VectorStore hybrid helper (`PortfolioCore.VectorStore.RRF`)
+- VectorStore hybrid capability (`PortfolioCore.Ports.VectorStore.Hybrid`)
 - Pipeline parallel execution (`parallel?/0`)
 - Pipeline error handling modes (`on_error/0`)
 - Pipeline timeout and cache TTL (`timeout/0`, `cache_ttl/0`)
@@ -833,7 +765,7 @@ Add at top after `[Unreleased]`:
 - `Chunker.chunk` type now includes `start_byte` and `end_byte` fields
 - `Retriever.retrieved_item` type now includes `id` field
 - `Reranker.reranked_item` type now includes `id` field
-- Port count increased from 13 to 14
+- Port count increased from 13 to 14 (plus capability behaviors)
 ```
 
 At bottom, update links:
@@ -906,7 +838,7 @@ Follow this order for clean incremental development:
 For each port enhancement:
 
 1. Write a test that verifies the callback exists in `behaviour_info(:callbacks)`
-2. Write a test that verifies optional callbacks are in `behaviour_info(:optional_callbacks)`
+2. Write a test that verifies optional callbacks (if any) are in `behaviour_info(:optional_callbacks)` and required callbacks are not
 3. Create a minimal mock implementation using Mox to verify the types compile
 
 Example test pattern:
@@ -916,20 +848,31 @@ defmodule PortfolioCore.Ports.GraphStoreEnhancedTest do
   use ExUnit.Case, async: true
 
   alias PortfolioCore.Ports.GraphStore
+  alias PortfolioCore.Ports.GraphStore.Community
 
-  describe "community operations" do
-    test "defines traverse/3 callback" do
-      callbacks = GraphStore.behaviour_info(:callbacks) ++
-                  GraphStore.behaviour_info(:optional_callbacks)
+  describe "graph traversal" do
+    test "defines traverse/3 callback as required" do
+      callbacks = GraphStore.behaviour_info(:callbacks)
+      optional = GraphStore.behaviour_info(:optional_callbacks)
+
       assert {:traverse, 3} in callbacks
+      refute {:traverse, 3} in optional
     end
 
-    test "defines community callbacks as optional" do
+    test "defines vector_search/3 callback as optional" do
       optional = GraphStore.behaviour_info(:optional_callbacks)
-      assert {:create_community, 3} in optional
-      assert {:get_community_members, 2} in optional
-      assert {:update_community_summary, 3} in optional
-      assert {:list_communities, 2} in optional
+      assert {:vector_search, 3} in optional
+    end
+  end
+
+  describe "community operations" do
+    test "defines community callbacks as required" do
+      callbacks = Community.behaviour_info(:callbacks)
+
+      assert {:create_community, 3} in callbacks
+      assert {:get_community_members, 2} in callbacks
+      assert {:update_community_summary, 3} in callbacks
+      assert {:list_communities, 2} in callbacks
     end
   end
 end
@@ -939,7 +882,7 @@ end
 
 ## NOTES
 
-- All new callbacks should be added to `@optional_callbacks` to maintain backward compatibility
+- New callbacks should be required unless they represent optional capabilities or non-universal backend features
 - Type definitions should use descriptive field names matching rag_ex conventions
 - Documentation should include examples and parameter descriptions
 - Use `@doc` for all public callbacks
@@ -954,10 +897,11 @@ Before marking complete:
 
 ```
 [ ] Evaluation port created with all callbacks
-[ ] GraphStore port has community operations
+[ ] GraphStore.Community behavior added
 [ ] Chunker port has byte positions
 [ ] Retriever port has capability callbacks
 [ ] VectorStore port has fulltext search
+[ ] VectorStore hybrid helper and behavior added
 [ ] Pipeline port has parallel/error handling
 [ ] Router port has execute callbacks
 [ ] Reranker port has normalize callback
