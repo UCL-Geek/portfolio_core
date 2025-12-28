@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2025-12-27
+
+### Added
+- `PortfolioCore.Ports.Router` - Multi-provider LLM routing behavior
+- `PortfolioCore.Ports.Cache` - Caching layer behavior
+- `PortfolioCore.Ports.Pipeline` - Pipeline step behavior
+- `PortfolioCore.Ports.Agent` - Tool-using agent behavior
+- `PortfolioCore.Ports.Tool` - Individual tool behavior
+- Enhanced Registry with metadata, capabilities, health tracking, and metrics
+- New manifest schema fields: `router`, `cache`, `agent`
+- New telemetry events for router, cache, and agent operations
+
+### Changed
+- Registry.register/3 now accepts optional metadata parameter
+- Manifest schema expanded with new configuration sections
+
 ## [0.1.1] - 2025-12-27
 
 ### Added
@@ -56,6 +72,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Concrete adapter implementations should use `portfolio_index` package
 - No database schemas, migrations, or external API calls included
 
-[Unreleased]: https://github.com/nshkrdotcom/portfolio_core/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/nshkrdotcom/portfolio_core/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/nshkrdotcom/portfolio_core/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/nshkrdotcom/portfolio_core/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/nshkrdotcom/portfolio_core/releases/tag/v0.1.0

@@ -18,6 +18,9 @@ defmodule PortfolioCore.TelemetryTest do
       assert [:portfolio_core, :manifest, :loaded] in events
       assert [:portfolio_core, :adapter, :call, :start] in events
       assert [:portfolio_core, :registry, :register] in events
+      assert [:portfolio_core, :router, :route, :start] in events
+      assert [:portfolio_core, :cache, :get, :hit] in events
+      assert [:portfolio_core, :agent, :run, :start] in events
     end
   end
 

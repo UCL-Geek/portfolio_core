@@ -13,6 +13,9 @@ defmodule PortfolioCore.Telemetry do
   - `[:portfolio_core, :adapter, :call, :start]` - Adapter call started
   - `[:portfolio_core, :adapter, :call, :stop]` - Adapter call completed
   - `[:portfolio_core, :adapter, :call, :exception]` - Adapter call failed
+  - `[:portfolio_core, :router, :route, :start]` - Router route started
+  - `[:portfolio_core, :cache, :get, :hit]` - Cache hit event
+  - `[:portfolio_core, :agent, :run, :start]` - Agent run started
 
   ## Usage
 
@@ -31,6 +34,26 @@ defmodule PortfolioCore.Telemetry do
         nil
       )
   """
+
+  @router_events [
+    [:portfolio_core, :router, :route, :start],
+    [:portfolio_core, :router, :route, :stop],
+    [:portfolio_core, :router, :route, :exception],
+    [:portfolio_core, :router, :health_check]
+  ]
+
+  @cache_events [
+    [:portfolio_core, :cache, :get, :hit],
+    [:portfolio_core, :cache, :get, :miss],
+    [:portfolio_core, :cache, :put],
+    [:portfolio_core, :cache, :delete]
+  ]
+
+  @agent_events [
+    [:portfolio_core, :agent, :run, :start],
+    [:portfolio_core, :agent, :run, :stop],
+    [:portfolio_core, :agent, :tool, :execute]
+  ]
 
   @doc """
   Execute a function wrapped in telemetry span.
@@ -138,7 +161,7 @@ defmodule PortfolioCore.Telemetry do
       # Registry events
       [:portfolio_core, :registry, :register],
       [:portfolio_core, :registry, :lookup]
-    ]
+    ] ++ @router_events ++ @cache_events ++ @agent_events
   end
 
   @doc """

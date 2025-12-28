@@ -223,8 +223,8 @@ defmodule PortfolioCore.Manifest.Engine do
     result =
       Enum.reduce_while(adapter_list, {:ok, %{}}, fn {port_name, config}, {:ok, acc} ->
         case resolve_adapter(port_name, config) do
-          {:ok, adapter} ->
-            Registry.register(port_name, adapter)
+          {:ok, {module, adapter_config} = adapter} ->
+            Registry.register(port_name, module, adapter_config)
             {:cont, {:ok, Map.put(acc, port_name, adapter)}}
 
           {:error, reason} ->

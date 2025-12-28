@@ -33,7 +33,9 @@ defmodule PortfolioCore do
       │  │           PORTS                   │  │
       │  │  VectorStore, GraphStore,         │  │
       │  │  Embedder, LLM, Chunker,          │  │
-      │  │  Retriever, Reranker, DocumentStore│  │
+      │  │  Retriever, Reranker,             │  │
+      │  │  DocumentStore, Router, Cache,    │  │
+      │  │  Pipeline, Agent, Tool            │  │
       │  └───────────────────────────────────┘  │
       │  ┌───────────────────────────────────┐  │
       │  │      MANIFEST ENGINE              │  │
@@ -58,7 +60,7 @@ defmodule PortfolioCore do
 
       ```elixir
       defp deps do
-        [{:portfolio_core, "~> 0.1.0"}]
+        [{:portfolio_core, "~> 0.2.0"}]
       end
       ```
 
@@ -89,7 +91,7 @@ defmodule PortfolioCore do
   4. Use adapters in your code:
 
       ```elixir
-      {adapter, config} = PortfolioCore.Registry.get!(:vector_store)
+      {adapter, config} = PortfolioCore.adapter!(:vector_store)
       adapter.search(config, index_id, query_vector, 10)
       ```
 
@@ -105,6 +107,11 @@ defmodule PortfolioCore do
   - `PortfolioCore.Ports.Chunker` - Document chunking
   - `PortfolioCore.Ports.Retriever` - Retrieval strategies
   - `PortfolioCore.Ports.Reranker` - Result reranking
+  - `PortfolioCore.Ports.Router` - Multi-provider LLM routing
+  - `PortfolioCore.Ports.Cache` - Caching layer abstraction
+  - `PortfolioCore.Ports.Pipeline` - Pipeline step definitions
+  - `PortfolioCore.Ports.Agent` - Tool-using agent behavior
+  - `PortfolioCore.Ports.Tool` - Individual tool definitions
   """
 
   alias PortfolioCore.Manifest.Engine
@@ -144,9 +151,12 @@ defmodule PortfolioCore do
       {adapter, config} = PortfolioCore.adapter(:vector_store)
       adapter.search(config[:index], query_vector, 10)
   """
-  @spec adapter(atom()) :: {module(), keyword()} | nil
+  @spec adapter(atom()) :: {module(), keyword() | map()} | nil
   def adapter(port_name) do
-    PortfolioCore.Registry.get(port_name)
+    case PortfolioCore.Registry.get(port_name) do
+      {:ok, entry} -> {entry.module, entry.config}
+      {:error, :not_found} -> nil
+    end
   end
 
   @doc """
@@ -168,9 +178,10 @@ defmodule PortfolioCore do
 
       {adapter, config} = PortfolioCore.adapter!(:embedder)
   """
-  @spec adapter!(atom()) :: {module(), keyword()}
+  @spec adapter!(atom()) :: {module(), keyword() | map()}
   def adapter!(port_name) do
-    PortfolioCore.Registry.get!(port_name)
+    entry = PortfolioCore.Registry.get!(port_name)
+    {entry.module, entry.config}
   end
 
   @doc """

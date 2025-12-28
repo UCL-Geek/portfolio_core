@@ -24,6 +24,29 @@ Portfolio Core provides the foundational primitives for building RAG (Retrieval-
 - **Adapter Registry** - ETS-backed runtime lookup for port implementations
 - **Telemetry Integration** - Built-in observability hooks
 
+## Features
+
+### Port Specifications (13 total)
+
+**Storage Ports:**
+- `VectorStore` - Vector similarity search
+- `GraphStore` - Knowledge graph operations
+- `DocumentStore` - Document storage and retrieval
+
+**AI Ports:**
+- `Embedder` - Text embedding generation
+- `LLM` - Language model completions
+- `Chunker` - Document chunking strategies
+- `Retriever` - Retrieval strategies
+- `Reranker` - Result reranking
+
+**Infrastructure Ports (NEW in v0.2.0):**
+- `Router` - Multi-provider LLM routing
+- `Cache` - Caching layer abstraction
+- `Pipeline` - Workflow step definitions
+- `Agent` - Tool-using agent behavior
+- `Tool` - Individual tool definitions
+
 ## Installation
 
 Add `portfolio_core` to your list of dependencies in `mix.exs`:
@@ -31,7 +54,7 @@ Add `portfolio_core` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:portfolio_core, "~> 0.1.1"}
+    {:portfolio_core, "~> 0.2.0"}
   ]
 end
 ```
@@ -89,24 +112,32 @@ end
 
 ```elixir
 # Get adapter at runtime
-{module, config} = PortfolioCore.Registry.get(:vector_store)
+{module, config} = PortfolioCore.adapter(:vector_store)
 
 # Use the adapter
 module.search("my_index", query_vector, 10, [])
 ```
 
-## Port Specifications
+## Enhanced Registry (v0.2.0)
 
-| Port | Description |
-|------|-------------|
-| `VectorStore` | Vector similarity search backends (pgvector, Qdrant, Pinecone) |
-| `GraphStore` | Knowledge graph databases (Neo4j, RocksDB) |
-| `DocumentStore` | Document storage and retrieval |
-| `Embedder` | Text embedding generation (OpenAI, Anthropic, local) |
-| `LLM` | Large language model access |
-| `Chunker` | Document chunking strategies |
-| `Retriever` | Retrieval strategy implementations |
-| `Reranker` | Result reranking |
+The registry now supports:
+- Adapter metadata and capabilities
+- Health status tracking
+- Call metrics and error rates
+
+```elixir
+# Register with capabilities
+PortfolioCore.Registry.register(:llm, MyLLM, config, %{
+  capabilities: [:generation, :streaming]
+})
+
+# Find by capability
+PortfolioCore.Registry.find_by_capability(:streaming)
+
+# Health tracking
+PortfolioCore.Registry.mark_unhealthy(:llm)
+PortfolioCore.Registry.health_status(:llm)  # => :unhealthy
+```
 
 ## Architecture
 

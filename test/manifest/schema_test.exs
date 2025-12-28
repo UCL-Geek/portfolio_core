@@ -73,4 +73,62 @@ defmodule PortfolioCore.Manifest.SchemaTest do
       assert Keyword.has_key?(schema, :enabled)
     end
   end
+
+  describe "new schema fields" do
+    test "validates router configuration" do
+      config = %{
+        version: "1.0",
+        environment: :dev,
+        adapters: %{},
+        router: %{
+          strategy: :specialist,
+          health_check_interval: 30_000,
+          providers: []
+        }
+      }
+
+      assert {:ok, _} = Schema.validate(config)
+    end
+
+    test "validates cache configuration" do
+      config = %{
+        version: "1.0",
+        environment: :dev,
+        adapters: %{},
+        cache: %{
+          enabled: true,
+          backend: :ets,
+          default_ttl: 3600
+        }
+      }
+
+      assert {:ok, _} = Schema.validate(config)
+    end
+
+    test "validates agent configuration" do
+      config = %{
+        version: "1.0",
+        environment: :dev,
+        adapters: %{},
+        agent: %{
+          max_iterations: 10,
+          timeout: 300_000,
+          tools: [:search, :read_file]
+        }
+      }
+
+      assert {:ok, _} = Schema.validate(config)
+    end
+
+    test "rejects invalid router strategy" do
+      config = %{
+        version: "1.0",
+        environment: :dev,
+        adapters: %{},
+        router: %{strategy: :invalid}
+      }
+
+      assert {:error, _} = Schema.validate(config)
+    end
+  end
 end

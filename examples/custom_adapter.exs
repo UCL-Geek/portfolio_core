@@ -189,7 +189,7 @@ IO.puts("that logs all operations for debugging/auditing purposes.\n")
 {:ok, _pid} = Examples.LoggingVectorStore.start_link([])
 
 # Register with the registry
-PortfolioCore.Registry.register(:vector_store, {Examples.LoggingVectorStore, []})
+PortfolioCore.Registry.register(:vector_store, Examples.LoggingVectorStore, [])
 
 IO.puts("\n--- Creating index ---")
 

@@ -63,6 +63,34 @@ defmodule PortfolioCore.Manifest.Schema do
         required: true,
         doc: "Adapter configurations keyed by port name"
       ],
+      router: [
+        type: :map,
+        doc: "Router configuration",
+        keys: [
+          strategy: [type: {:in, [:fallback, :round_robin, :specialist, :cost_optimized]}],
+          health_check_interval: [type: :pos_integer, default: 30_000],
+          providers: [type: {:list, :map}]
+        ]
+      ],
+      cache: [
+        type: :map,
+        doc: "Cache configuration",
+        keys: [
+          enabled: [type: :boolean, default: true],
+          backend: [type: {:in, [:ets, :redis, :mnesia]}],
+          default_ttl: [type: :pos_integer, default: 3600],
+          namespaces: [type: :map]
+        ]
+      ],
+      agent: [
+        type: :map,
+        doc: "Agent configuration",
+        keys: [
+          max_iterations: [type: :pos_integer, default: 10],
+          timeout: [type: :pos_integer, default: 300_000],
+          tools: [type: {:list, :atom}]
+        ]
+      ],
       pipelines: [
         type: {:or, [:map, :keyword_list]},
         default: %{},

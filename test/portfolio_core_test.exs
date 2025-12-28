@@ -7,7 +7,7 @@ defmodule PortfolioCoreTest do
     end
 
     test "returns adapter from registry" do
-      PortfolioCore.Registry.register(:test_port, {TestModule, [key: :value]})
+      PortfolioCore.Registry.register(:test_port, TestModule, key: :value)
       assert {TestModule, [key: :value]} == PortfolioCore.adapter(:test_port)
       PortfolioCore.Registry.unregister(:test_port)
     end
@@ -21,7 +21,7 @@ defmodule PortfolioCoreTest do
     end
 
     test "returns adapter from registry" do
-      PortfolioCore.Registry.register(:test_port2, {AnotherModule, []})
+      PortfolioCore.Registry.register(:test_port2, AnotherModule, [])
       assert {AnotherModule, []} == PortfolioCore.adapter!(:test_port2)
       PortfolioCore.Registry.unregister(:test_port2)
     end
@@ -30,8 +30,8 @@ defmodule PortfolioCoreTest do
   describe "registered_ports/0" do
     test "returns list of registered ports" do
       # Register some ports
-      PortfolioCore.Registry.register(:port_a, {A, []})
-      PortfolioCore.Registry.register(:port_b, {B, []})
+      PortfolioCore.Registry.register(:port_a, A, [])
+      PortfolioCore.Registry.register(:port_b, B, [])
 
       ports = PortfolioCore.registered_ports()
       assert :port_a in ports
