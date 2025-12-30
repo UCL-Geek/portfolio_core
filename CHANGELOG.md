@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2025-12-30
+
+### Added
+
+- Chunker port `size_unit` type and config field
+  - `size_unit :: :characters | :tokens` - Specifies how chunk sizes are measured
+  - Enables token-based chunking for LLM context window budgeting
+  - Adapters interpret `:tokens` using their own token estimation
+
+### Changed
+
+- `Chunker.chunk_config` type now includes optional `size_unit` field
+
 ## [0.3.0] - 2025-12-28
 
 ### Added

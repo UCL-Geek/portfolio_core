@@ -29,6 +29,14 @@ defmodule PortfolioCore.Ports.Chunker do
   A typical configuration might use:
   - `chunk_size: 1000` (characters or tokens)
   - `chunk_overlap: 200` (20% overlap)
+
+  ## Size Units
+
+  The `size_unit` option specifies how `chunk_size` and `chunk_overlap` are measured:
+  - `:characters` - Size in characters (default, uses `String.length/1`)
+  - `:tokens` - Size in tokens (adapter provides token estimation)
+
+  Token-based sizing is useful for LLM context window budgeting.
   """
 
   @type text :: String.t()
@@ -52,9 +60,12 @@ defmodule PortfolioCore.Ports.Chunker do
           metadata: map()
         }
 
+  @type size_unit :: :characters | :tokens
+
   @type chunk_config :: %{
           chunk_size: pos_integer(),
           chunk_overlap: non_neg_integer(),
+          size_unit: size_unit() | nil,
           separators: [String.t()] | nil
         }
 
@@ -68,6 +79,7 @@ defmodule PortfolioCore.Ports.Chunker do
     - `config` - Chunking configuration:
       - `:chunk_size` - Target size for each chunk
       - `:chunk_overlap` - Overlap between adjacent chunks
+      - `:size_unit` - Unit for sizes: `:characters` or `:tokens` (optional)
       - `:separators` - Custom separators (optional)
 
   ## Returns

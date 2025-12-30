@@ -38,7 +38,7 @@ Portfolio Core provides the foundational primitives for building RAG (Retrieval-
 **AI Ports:**
 - `Embedder` - Text embedding generation
 - `LLM` - Language model completions
-- `Chunker` - Document chunking strategies
+- `Chunker` - Document chunking strategies (supports token-based sizing)
 - `Retriever` - Retrieval strategies
 - `Reranker` - Result reranking
 
@@ -59,7 +59,7 @@ Add `portfolio_core` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:portfolio_core, "~> 0.3.0"}
+    {:portfolio_core, "~> 0.3.1"}
   ]
 end
 ```
@@ -122,6 +122,32 @@ end
 # Use the adapter
 module.search("my_index", query_vector, 10, [])
 ```
+
+## Token-Based Chunking (v0.3.1)
+
+The `Chunker` port now supports a `size_unit` configuration option for token-aware chunking:
+
+```elixir
+# Character-based sizing (default)
+config = %{
+  chunk_size: 1000,
+  chunk_overlap: 200,
+  size_unit: :characters,
+  separators: nil
+}
+
+# Token-based sizing (for LLM context windows)
+config = %{
+  chunk_size: 512,        # 512 tokens
+  chunk_overlap: 50,      # 50 tokens overlap
+  size_unit: :tokens,
+  separators: nil
+}
+
+{:ok, chunks} = MyChunker.chunk(text, :markdown, config)
+```
+
+Adapters interpret `:tokens` using their own token estimation (typically ~4 characters per token).
 
 ## Enhanced Registry (v0.2.0)
 
