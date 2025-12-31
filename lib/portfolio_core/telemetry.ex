@@ -1,13 +1,45 @@
 defmodule PortfolioCore.Telemetry do
   @moduledoc """
-  Telemetry event definitions and helpers.
+  Telemetry event definitions and utilities for the Portfolio libraries.
 
-  Provides macros and functions for emitting telemetry events throughout
-  the portfolio_core system. Follows the `:telemetry` library conventions.
+  ## Event Naming Convention
 
-  ## Event Naming
+  All events follow the pattern: `[:portfolio, :component, :operation]`
 
-  All events are prefixed with `[:portfolio_core, ...]`:
+  ## Standard Events
+
+  ### Embedding Events
+  - `[:portfolio, :embedder, :embed, :start]`
+  - `[:portfolio, :embedder, :embed, :stop]`
+  - `[:portfolio, :embedder, :embed, :exception]`
+
+  ### Vector Store Events
+  - `[:portfolio, :vector_store, :search, :start]`
+  - `[:portfolio, :vector_store, :search, :stop]`
+  - `[:portfolio, :vector_store, :insert, :start]`
+  - `[:portfolio, :vector_store, :insert, :stop]`
+
+  ### LLM Events
+  - `[:portfolio, :llm, :complete, :start]`
+  - `[:portfolio, :llm, :complete, :stop]`
+  - `[:portfolio, :llm, :complete, :exception]`
+
+  ### RAG Pipeline Events
+  - `[:portfolio, :rag, :rewrite, :start/:stop/:exception]`
+  - `[:portfolio, :rag, :expand, :start/:stop/:exception]`
+  - `[:portfolio, :rag, :decompose, :start/:stop/:exception]`
+  - `[:portfolio, :rag, :select, :start/:stop/:exception]`
+  - `[:portfolio, :rag, :search, :start/:stop/:exception]`
+  - `[:portfolio, :rag, :rerank, :start/:stop/:exception]`
+  - `[:portfolio, :rag, :answer, :start/:stop/:exception]`
+
+  ### Evaluation Events
+  - `[:portfolio, :evaluation, :run, :start/:stop/:exception]`
+  - `[:portfolio, :evaluation, :test_case, :start/:stop]`
+
+  ## Legacy Events
+
+  For backwards compatibility, `[:portfolio_core, ...]` events are still emitted:
 
   - `[:portfolio_core, :manifest, :loaded]` - Manifest loaded successfully
   - `[:portfolio_core, :adapter, :call, :start]` - Adapter call started
@@ -24,6 +56,11 @@ defmodule PortfolioCore.Telemetry do
       PortfolioCore.Telemetry.with_span [:adapter, :search], %{index: "my_index"} do
         # Your code here
       end
+
+      # Using the span function
+      PortfolioCore.Telemetry.span([:portfolio, :embedder, :embed], %{text: "hello"}, fn ->
+        do_embedding()
+      end)
 
   ## Attaching Handlers
 
@@ -73,10 +110,109 @@ defmodule PortfolioCore.Telemetry do
     [:portfolio_core, :graph_store, :community, :update_summary]
   ]
 
+  # Standard Portfolio events (new unified namespace)
+  @embedder_events [
+    [:portfolio, :embedder, :embed, :start],
+    [:portfolio, :embedder, :embed, :stop],
+    [:portfolio, :embedder, :embed, :exception],
+    [:portfolio, :embedder, :embed_batch, :start],
+    [:portfolio, :embedder, :embed_batch, :stop],
+    [:portfolio, :embedder, :embed_batch, :exception]
+  ]
+
+  @vector_store_events [
+    [:portfolio, :vector_store, :search, :start],
+    [:portfolio, :vector_store, :search, :stop],
+    [:portfolio, :vector_store, :search, :exception],
+    [:portfolio, :vector_store, :insert, :start],
+    [:portfolio, :vector_store, :insert, :stop],
+    [:portfolio, :vector_store, :insert, :exception],
+    [:portfolio, :vector_store, :insert_batch, :start],
+    [:portfolio, :vector_store, :insert_batch, :stop],
+    [:portfolio, :vector_store, :insert_batch, :exception]
+  ]
+
+  @llm_events [
+    [:portfolio, :llm, :complete, :start],
+    [:portfolio, :llm, :complete, :stop],
+    [:portfolio, :llm, :complete, :exception]
+  ]
+
+  @rag_events [
+    [:portfolio, :rag, :rewrite, :start],
+    [:portfolio, :rag, :rewrite, :stop],
+    [:portfolio, :rag, :rewrite, :exception],
+    [:portfolio, :rag, :expand, :start],
+    [:portfolio, :rag, :expand, :stop],
+    [:portfolio, :rag, :expand, :exception],
+    [:portfolio, :rag, :decompose, :start],
+    [:portfolio, :rag, :decompose, :stop],
+    [:portfolio, :rag, :decompose, :exception],
+    [:portfolio, :rag, :select, :start],
+    [:portfolio, :rag, :select, :stop],
+    [:portfolio, :rag, :select, :exception],
+    [:portfolio, :rag, :search, :start],
+    [:portfolio, :rag, :search, :stop],
+    [:portfolio, :rag, :search, :exception],
+    [:portfolio, :rag, :rerank, :start],
+    [:portfolio, :rag, :rerank, :stop],
+    [:portfolio, :rag, :rerank, :exception],
+    [:portfolio, :rag, :answer, :start],
+    [:portfolio, :rag, :answer, :stop],
+    [:portfolio, :rag, :answer, :exception],
+    [:portfolio, :rag, :self_correct, :start],
+    [:portfolio, :rag, :self_correct, :stop],
+    [:portfolio, :rag, :self_correct, :exception]
+  ]
+
+  @portfolio_evaluation_events [
+    [:portfolio, :evaluation, :run, :start],
+    [:portfolio, :evaluation, :run, :stop],
+    [:portfolio, :evaluation, :run, :exception],
+    [:portfolio, :evaluation, :test_case, :start],
+    [:portfolio, :evaluation, :test_case, :stop]
+  ]
+
+  @type event_name :: [atom()]
+  @type measurements :: map()
+  @type metadata :: map()
+
   @doc """
   Execute a function wrapped in telemetry span.
+  Emits start, stop, and exception events automatically.
+
+  This function uses the standard `:telemetry.span/3` pattern.
+  Unlike `with_span`, the event name is used as-is without prefixing.
+
+  ## Parameters
+
+    - `event` - Event name (list of atoms)
+    - `metadata` - Additional metadata for the events
+    - `fun` - Function to execute (arity 0)
+
+  ## Example
+
+      PortfolioCore.Telemetry.span(
+        [:portfolio, :embedder, :embed],
+        %{text: "hello world"},
+        fn -> generate_embedding(text) end
+      )
+  """
+  @spec span(event_name(), metadata(), (-> result)) :: result when result: any()
+  def span(event, metadata, fun) when is_list(event) and is_function(fun, 0) do
+    :telemetry.span(event, metadata, fn ->
+      result = fun.()
+      {result, %{}}
+    end)
+  end
+
+  @doc """
+  Execute a function wrapped in telemetry span (legacy).
 
   Emits `:start`, `:stop`, and `:exception` events for the operation.
+  Event names are prefixed with `:portfolio_core`.
+
+  For new code, prefer using `span/3` with the new `[:portfolio, ...]` namespace.
 
   ## Parameters
 
@@ -152,7 +288,10 @@ defmodule PortfolioCore.Telemetry do
   end
 
   @doc """
-  List of all telemetry events emitted by portfolio_core.
+  Get all defined event names for documentation/attachment.
+
+  Returns both legacy `[:portfolio_core, ...]` events and new
+  `[:portfolio, ...]` events.
 
   Use this to attach handlers for all events:
 
@@ -163,8 +302,40 @@ defmodule PortfolioCore.Telemetry do
         nil
       )
   """
-  @spec events() :: [[atom()]]
+  @spec events() :: [event_name()]
   def events do
+    legacy_events() ++ portfolio_events()
+  end
+
+  @doc """
+  Get events for a specific component.
+
+  ## Parameters
+
+    - `component` - Component name (`:embedder`, `:vector_store`, `:llm`, `:rag`, `:evaluation`)
+
+  ## Example
+
+      PortfolioCore.Telemetry.events_for(:embedder)
+      # => [[:portfolio, :embedder, :embed, :start], ...]
+
+      PortfolioCore.Telemetry.events_for(:llm)
+      # => [[:portfolio, :llm, :complete, :start], ...]
+  """
+  @spec events_for(atom()) :: [event_name()]
+  def events_for(:embedder), do: @embedder_events
+  def events_for(:vector_store), do: @vector_store_events
+  def events_for(:llm), do: @llm_events
+  def events_for(:rag), do: @rag_events
+  def events_for(:evaluation), do: @portfolio_evaluation_events
+  def events_for(:router), do: @router_events
+  def events_for(:cache), do: @cache_events
+  def events_for(:agent), do: @agent_events
+  def events_for(:graph), do: @graph_events
+  def events_for(_), do: []
+
+  @doc false
+  def legacy_events do
     [
       # Manifest events
       [:portfolio_core, :manifest, :loaded],
@@ -185,6 +356,15 @@ defmodule PortfolioCore.Telemetry do
       @agent_events ++
       @evaluation_events ++
       @graph_events
+  end
+
+  @doc false
+  def portfolio_events do
+    @embedder_events ++
+      @vector_store_events ++
+      @llm_events ++
+      @rag_events ++
+      @portfolio_evaluation_events
   end
 
   @doc """

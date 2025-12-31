@@ -11,6 +11,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `PortfolioCore.Ports.CollectionSelector` behaviour for query routing
+  - `select/3` - Select relevant collections for a query
+  - Returns selected collection names with optional reasoning and confidence score
+  - Enables intelligent routing of queries to appropriate data sources
+- `PortfolioCore.Telemetry` - Extended telemetry event definitions and span utilities
+  - New `[:portfolio, ...]` namespace for standardized events
+  - `span/3` function for wrapping operations with start/stop/exception events
+  - `events_for/1` to get events for specific components (embedder, llm, rag, etc.)
+  - Event definitions for: embedder, vector_store, llm, rag, evaluation
+- `PortfolioCore.Ports.RetrievalMetrics` behaviour for IR quality metrics
+  - `compute/3` - Calculate metrics for a single test case (expected vs retrieved chunks)
+  - `aggregate/1` - Aggregate metrics across multiple test cases
+  - Metrics: Recall@K, Precision@K, MRR, Hit Rate@K
+- `PortfolioCore.Ports.QueryRewriter` behaviour for query cleaning
+  - `rewrite/2` - Transform conversational input into clean search queries
+  - Removes greetings, filler phrases, and extracts core question
+- `PortfolioCore.Ports.QueryExpander` behaviour for query expansion
+  - `expand/2` - Add synonyms and related terms for better recall
+  - Expands abbreviations and acronyms
+- `PortfolioCore.Ports.QueryDecomposer` behaviour for multi-hop queries
+  - `decompose/2` - Break complex questions into simpler sub-questions
+  - Enables parallel retrieval for multi-faceted queries
 - Chunker port `size_unit` type and config field
   - `size_unit :: :characters | :tokens` - Specifies how chunk sizes are measured
   - Enables token-based chunking for LLM context window budgeting
@@ -119,7 +141,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Concrete adapter implementations should use `portfolio_index` package
 - No database schemas, migrations, or external API calls included
 
-[Unreleased]: https://github.com/nshkrdotcom/portfolio_core/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/nshkrdotcom/portfolio_core/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/nshkrdotcom/portfolio_core/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/nshkrdotcom/portfolio_core/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/nshkrdotcom/portfolio_core/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/nshkrdotcom/portfolio_core/compare/v0.1.0...v0.1.1
