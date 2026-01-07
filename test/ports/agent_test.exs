@@ -1,5 +1,5 @@
 defmodule PortfolioCore.Ports.AgentTest do
-  use ExUnit.Case, async: true
+  use PortfolioCore.SupertesterCase, async: true
 
   import Mox
 

@@ -1,7 +1,7 @@
 defmodule PortfolioIndex.Adapters.GraphStore.Neo4j.CommunityTest do
-  use ExUnit.Case, async: true
+  use PortfolioCore.SupertesterCase, async: true
 
-  alias PortfolioIndex.Adapters.GraphStore.Neo4j.Community
+  alias PortfolioCore.TestSupport.Neo4jCommunity, as: Community
 
   describe "module attributes" do
     test "implements GraphStore.Community behaviour" do

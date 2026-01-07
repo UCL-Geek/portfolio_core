@@ -1,5 +1,5 @@
 defmodule PortfolioCore.TelemetryTest do
-  use ExUnit.Case
+  use PortfolioCore.SupertesterCase, async: false
 
   alias PortfolioCore.Telemetry
 

@@ -1,9 +1,11 @@
 ExUnit.start()
 
+Code.require_file(Path.join(__DIR__, "support/supertester_case.ex"))
+
 Code.require_file(
   Path.join(
     __DIR__,
-    "support/portfolio_index/adapters/graph_store/neo4j/community.exs"
+    "support/portfolio_index/adapters/graph_store/neo4j/community.ex"
   )
 )
 

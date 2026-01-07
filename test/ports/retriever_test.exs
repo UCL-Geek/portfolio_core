@@ -1,5 +1,5 @@
 defmodule PortfolioCore.Ports.RetrieverTest do
-  use ExUnit.Case, async: true
+  use PortfolioCore.SupertesterCase, async: true
 
   alias PortfolioCore.Ports.Retriever
 

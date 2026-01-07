@@ -1,5 +1,5 @@
 defmodule PortfolioCore.Ports.QueryExpanderTest do
-  use ExUnit.Case, async: true
+  use PortfolioCore.SupertesterCase, async: true
 
   alias PortfolioCore.Ports.QueryExpander
 

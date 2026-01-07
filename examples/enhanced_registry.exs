@@ -14,7 +14,7 @@ IO.puts("=" |> String.duplicate(60))
 Registry.clear()
 
 # Register with metadata
-Registry.register(:primary_llm, Examples.DummyLLM, %{model: "gpt-4"}, %{
+Registry.register(:primary_llm, Examples.DummyLLM, %{model: "gpt-4o-mini"}, %{
   capabilities: [:generation, :streaming, :function_calling]
 })
 

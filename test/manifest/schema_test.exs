@@ -1,5 +1,5 @@
 defmodule PortfolioCore.Manifest.SchemaTest do
-  use ExUnit.Case
+  use PortfolioCore.SupertesterCase, async: false
 
   alias PortfolioCore.Manifest.Schema
 

@@ -1,5 +1,5 @@
 defmodule PortfolioCore.Ports.QueryDecomposerTest do
-  use ExUnit.Case, async: true
+  use PortfolioCore.SupertesterCase, async: true
 
   alias PortfolioCore.Ports.QueryDecomposer
 

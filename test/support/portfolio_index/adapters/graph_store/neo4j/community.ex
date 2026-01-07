@@ -1,4 +1,4 @@
-defmodule PortfolioIndex.Adapters.GraphStore.Neo4j.Community do
+defmodule PortfolioCore.TestSupport.Neo4jCommunity do
   @moduledoc false
   # Test stub: portfolio_core ships ports only; adapters live in portfolio_index.
   @behaviour PortfolioCore.Ports.GraphStore.Community

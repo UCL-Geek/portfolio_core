@@ -138,10 +138,10 @@ IO.puts("=" |> String.duplicate(60))
   Examples.SimpleRouter.register_provider(%{
     name: :primary,
     module: Examples.DummyLLM,
-    config: %{model: "gpt-4"},
+    config: %{model: "gpt-4o-mini"},
     capabilities: [:generation, :code],
     priority: 1,
-    cost_per_token: 0.02,
+    cost_per_token: 0.001,
     healthy: true
   })
 
@@ -149,10 +149,10 @@ IO.puts("=" |> String.duplicate(60))
   Examples.SimpleRouter.register_provider(%{
     name: :backup,
     module: Examples.DummyLLM,
-    config: %{model: "gpt-3.5"},
+    config: %{model: "gpt-4o-mini"},
     capabilities: [:generation],
     priority: 2,
-    cost_per_token: 0.01,
+    cost_per_token: 0.001,
     healthy: true
   })
 

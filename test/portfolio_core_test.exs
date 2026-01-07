@@ -1,5 +1,5 @@
 defmodule PortfolioCoreTest do
-  use ExUnit.Case
+  use PortfolioCore.SupertesterCase, async: false
 
   describe "adapter/1" do
     test "returns nil when no adapter registered" do

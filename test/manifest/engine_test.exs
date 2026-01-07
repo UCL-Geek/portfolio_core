@@ -1,5 +1,5 @@
 defmodule PortfolioCore.Manifest.EngineTest do
-  use ExUnit.Case
+  use PortfolioCore.SupertesterCase, async: false
 
   alias PortfolioCore.Manifest.Engine
 

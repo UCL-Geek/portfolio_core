@@ -32,6 +32,18 @@ defmodule PortfolioCore.Registry do
 
   @table_name :portfolio_core_adapters
 
+  @doc false
+  def table_name do
+    Application.get_env(:portfolio_core, :registry_table, @table_name)
+  end
+
+  @doc false
+  def __supertester_set_table__(:table_name, table) do
+    Application.put_env(:portfolio_core, :registry_table, table)
+  end
+
+  def __supertester_set_table__(_key, _table), do: :ok
+
   @type port_name :: atom()
   @type metadata :: map()
   @type entry :: %{
@@ -91,7 +103,7 @@ defmodule PortfolioCore.Registry do
       error_count: 0
     }
 
-    :ets.insert(@table_name, {port_name, entry})
+    :ets.insert(table(), {port_name, entry})
     :ok
   end
 
@@ -118,7 +130,7 @@ defmodule PortfolioCore.Registry do
   """
   @spec get(port_name()) :: {:ok, entry()} | {:error, :not_found}
   def get(port_name) do
-    case :ets.lookup(@table_name, port_name) do
+    case :ets.lookup(table(), port_name) do
       [{^port_name, entry}] -> {:ok, entry}
       [] -> {:error, :not_found}
     end
@@ -156,7 +168,7 @@ defmodule PortfolioCore.Registry do
   """
   @spec list_ports() :: [port_name()]
   def list_ports do
-    :ets.tab2list(@table_name)
+    :ets.tab2list(table())
     |> Enum.map(&elem(&1, 0))
   end
 
@@ -173,7 +185,7 @@ defmodule PortfolioCore.Registry do
   """
   @spec unregister(port_name()) :: :ok
   def unregister(port_name) do
-    :ets.delete(@table_name, port_name)
+    :ets.delete(table(), port_name)
     :ok
   end
 
@@ -188,7 +200,7 @@ defmodule PortfolioCore.Registry do
   """
   @spec clear() :: :ok
   def clear do
-    :ets.delete_all_objects(@table_name)
+    :ets.delete_all_objects(table())
     :ok
   end
 
@@ -206,7 +218,7 @@ defmodule PortfolioCore.Registry do
   """
   @spec registered?(port_name()) :: boolean()
   def registered?(port_name) do
-    :ets.member(@table_name, port_name)
+    :ets.member(table(), port_name)
   end
 
   @doc """
@@ -214,7 +226,7 @@ defmodule PortfolioCore.Registry do
   """
   @spec find_by_capability(term()) :: [{port_name(), module(), keyword() | map()}]
   def find_by_capability(capability) do
-    :ets.tab2list(@table_name)
+    :ets.tab2list(table())
     |> Enum.filter(fn {_port, entry} ->
       capability in (entry.metadata[:capabilities] || [])
     end)
@@ -285,14 +297,7 @@ defmodule PortfolioCore.Registry do
 
   @impl true
   def init(_opts) do
-    table =
-      :ets.new(@table_name, [
-        :named_table,
-        :public,
-        :set,
-        read_concurrency: true,
-        write_concurrency: true
-      ])
+    table = ensure_table()
 
     {:ok, %{table: table}}
   end
@@ -300,10 +305,10 @@ defmodule PortfolioCore.Registry do
   # Private helpers
 
   defp update_entry(port_name, fun) when is_function(fun, 1) do
-    case :ets.lookup(@table_name, port_name) do
+    case :ets.lookup(table(), port_name) do
       [{^port_name, entry}] ->
         updated = fun.(entry)
-        :ets.insert(@table_name, {port_name, updated})
+        :ets.insert(table(), {port_name, updated})
         :ok
 
       [] ->
@@ -319,4 +324,50 @@ defmodule PortfolioCore.Registry do
 
   defp safe_div(_num, 0), do: 0.0
   defp safe_div(num, denom), do: num / denom
+
+  defp table do
+    ensure_table()
+  end
+
+  defp ensure_table do
+    table = table_name() || @table_name
+
+    cond do
+      is_atom(table) ->
+        case :ets.whereis(table) do
+          :undefined ->
+            :ets.new(table, [
+              :named_table,
+              :public,
+              :set,
+              read_concurrency: true,
+              write_concurrency: true
+            ])
+
+          _tid ->
+            table
+        end
+
+      is_reference(table) ->
+        case :ets.info(table) do
+          :undefined ->
+            new_table =
+              :ets.new(:portfolio_core_adapters, [
+                :public,
+                :set,
+                read_concurrency: true,
+                write_concurrency: true
+              ])
+
+            Application.put_env(:portfolio_core, :registry_table, new_table)
+            new_table
+
+          _info ->
+            table
+        end
+
+      true ->
+        table
+    end
+  end
 end

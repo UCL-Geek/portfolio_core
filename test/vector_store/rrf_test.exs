@@ -1,5 +1,5 @@
 defmodule PortfolioCore.VectorStore.RRFTest do
-  use ExUnit.Case, async: true
+  use PortfolioCore.SupertesterCase, async: true
 
   alias PortfolioCore.VectorStore.RRF
 

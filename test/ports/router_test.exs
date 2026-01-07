@@ -1,5 +1,5 @@
 defmodule PortfolioCore.Ports.RouterTest do
-  use ExUnit.Case, async: true
+  use PortfolioCore.SupertesterCase, async: true
 
   import Mox
 

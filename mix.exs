@@ -21,12 +21,18 @@ defmodule PortfolioCore.MixProject do
         plt_file: {:no_warn, "priv/plts/dialyzer.plt"},
         flags: [:error_handling, :unknown, :unmatched_returns]
       ],
-      preferred_cli_env: [
+      test_coverage: [tool: ExCoveralls],
+      test_ignore_filters: [~r{test/support/}]
+    ]
+  end
+
+  def cli do
+    [
+      preferred_envs: [
         "test.watch": :test,
         coveralls: :test,
         "coveralls.html": :test
-      ],
-      test_coverage: [tool: ExCoveralls]
+      ]
     ]
   end
 
@@ -49,9 +55,10 @@ defmodule PortfolioCore.MixProject do
       {:ex_doc, "~> 0.31", only: :dev, runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
-      {:stream_data, "~> 0.6", only: [:dev, :test]},
+      {:stream_data, "~> 1.2", only: [:dev, :test]},
       {:mox, "~> 1.1", only: :test},
-      {:excoveralls, "~> 0.18", only: :test}
+      {:excoveralls, "~> 0.18", only: :test},
+      {:supertester, "~> 0.5.0", only: :test}
     ]
   end
 

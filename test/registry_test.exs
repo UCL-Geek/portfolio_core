@@ -1,5 +1,5 @@
 defmodule PortfolioCore.RegistryTest do
-  use ExUnit.Case
+  use PortfolioCore.SupertesterCase, async: false
 
   alias PortfolioCore.Registry
 

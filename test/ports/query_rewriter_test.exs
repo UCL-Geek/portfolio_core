@@ -1,5 +1,5 @@
 defmodule PortfolioCore.Ports.QueryRewriterTest do
-  use ExUnit.Case, async: true
+  use PortfolioCore.SupertesterCase, async: true
 
   alias PortfolioCore.Ports.QueryRewriter
 
