@@ -30,6 +30,8 @@ defmodule PortfolioCore.Registry do
 
   use GenServer
 
+  alias PortfolioCore.Backend.Capabilities, as: BackendCapabilities
+
   @table_name :portfolio_core_adapters
 
   @doc false
@@ -63,6 +65,8 @@ defmodule PortfolioCore.Registry do
           healthy: boolean(),
           uptime: non_neg_integer()
         }
+
+  @type backend_capabilities :: BackendCapabilities.t()
 
   # Client API
 
@@ -287,6 +291,21 @@ defmodule PortfolioCore.Registry do
            healthy: entry.healthy,
            uptime: DateTime.diff(DateTime.utc_now(), entry.registered_at)
          }}
+
+      {:error, :not_found} ->
+        {:error, :not_found}
+    end
+  end
+
+  @doc """
+  Get backend capabilities for a registered adapter.
+  """
+  @spec backend_capabilities(port_name(), keyword()) ::
+          {:ok, backend_capabilities()} | {:error, :not_found | term()}
+  def backend_capabilities(port_name, opts \\ []) do
+    case get(port_name) do
+      {:ok, entry} ->
+        BackendCapabilities.from_adapter(entry.module, entry.config, entry.metadata, opts)
 
       {:error, :not_found} ->
         {:error, :not_found}

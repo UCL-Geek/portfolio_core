@@ -37,6 +37,7 @@ defmodule PortfolioCore.Ports.Router do
           module: module(),
           config: map(),
           capabilities: [capability()],
+          backend_capabilities: PortfolioCore.Backend.Capabilities.t() | map() | nil,
           priority: non_neg_integer(),
           cost_per_token: float(),
           healthy: boolean()

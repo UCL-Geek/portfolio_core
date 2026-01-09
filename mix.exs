@@ -1,7 +1,7 @@
 defmodule PortfolioCore.MixProject do
   use Mix.Project
 
-  @version "0.3.1"
+  @version "0.4.0"
   @source_url "https://github.com/nshkrdotcom/portfolio_core"
 
   def project do
@@ -78,15 +78,27 @@ defmodule PortfolioCore.MixProject do
 
   defp docs do
     [
-      main: "readme",
+      main: "overview",
       source_url: @source_url,
       source_ref: "v#{@version}",
       assets: %{"assets" => "assets"},
       logo: "assets/portfolio_core.svg",
-      extras: ["README.md", "CHANGELOG.md", "LICENSE"],
+      extras: [
+        {"README.md", [title: "Overview", filename: "overview"]},
+        {"examples/README.md", [title: "Examples", filename: "examples"]},
+        {"CHANGELOG.md", [title: "Changelog", filename: "changelog"]},
+        {"LICENSE", [title: "License", filename: "license"]}
+      ],
+      groups_for_extras: [
+        Guides: ["overview", "examples"],
+        Reference: ["changelog", "license"]
+      ],
       groups_for_modules: [
-        Ports: ~r/PortfolioCore\.Ports\./,
-        Manifest: ~r/PortfolioCore\.Manifest\./,
+        "Core Ports": ~r/PortfolioCore\.Ports\.(LLM|Embedder|Chunker|Retriever|Reranker)/,
+        "Storage Ports": ~r/PortfolioCore\.Ports\.(VectorStore|DocumentStore|GraphStore)/,
+        "Infrastructure Ports": ~r/PortfolioCore\.Ports\.(Cache|RateLimiter|Router|Agent)/,
+        "RAG Ports": ~r/PortfolioCore\.Ports\.(QueryProcessor|ResponseGenerator)/,
+        Manifest: ~r/PortfolioCore\.Manifest/,
         Registry: ~r/PortfolioCore\.Registry/,
         Telemetry: ~r/PortfolioCore\.Telemetry/
       ]

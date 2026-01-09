@@ -32,4 +32,20 @@ echo "7. Enhanced Registry (v0.2.0)"
 mix run examples/enhanced_registry.exs
 echo ""
 
+echo "8. Document Store"
+mix run examples/document_store_port.exs
+echo ""
+
+echo "9. Graph Store"
+mix run examples/graph_store_port.exs
+echo ""
+
+echo "10. Ollama LLM Adapter"
+mix run examples/ollama_llm_adapter.exs
+echo ""
+
+echo "11. Ollama Embedder"
+mix run examples/ollama_embedder.exs
+echo ""
+
 echo "=== All examples completed successfully ==="

@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-01-08
+
+### Added
+- `PortfolioCore.Backend.Capabilities` struct for CrucibleIR-compatible capability metadata
+  - `from_metadata/2`, `from_adapter/4` - Build from metadata or adapter modules
+  - `to_backend_ir/1` - Convert to CrucibleIR struct when available
+- `PortfolioCore.Registry.backend_capabilities/2` - Adapter capability discovery
+- New examples: DocumentStore, GraphStore, Ollama LLM/Embedder adapters
+- Enhanced registry example with live OpenAI adapter
+
+### Changed
+- `Router.provider` type now includes `backend_capabilities` field
+
 ## [0.3.1] - 2025-12-30
 
 ### Added
@@ -141,7 +154,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Concrete adapter implementations should use `portfolio_index` package
 - No database schemas, migrations, or external API calls included
 
-[Unreleased]: https://github.com/nshkrdotcom/portfolio_core/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/nshkrdotcom/portfolio_core/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/nshkrdotcom/portfolio_core/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/nshkrdotcom/portfolio_core/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/nshkrdotcom/portfolio_core/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/nshkrdotcom/portfolio_core/compare/v0.1.1...v0.2.0

@@ -654,6 +654,26 @@ defmodule PortfolioCore.Registry do
 end
 ```
 
+### Backend Capability Discovery
+
+Use `backend_capabilities/2` with `PortfolioCore.Backend.Capabilities` to expose
+metadata compatible with `CrucibleIR.Backend.Capabilities`:
+
+```elixir
+Registry.register(:llm, MyLLM, config, %{
+  capabilities: [:generation, :streaming],
+  backend_capabilities: %{
+    backend_id: :openai,
+    provider: "openai",
+    models: ["gpt-4o-mini"],
+    supports_vision: true
+  }
+})
+
+{:ok, caps} = Registry.backend_capabilities(:llm)
+backend_ir = PortfolioCore.Backend.Capabilities.to_backend_ir(caps)
+```
+
 ## File Structure
 
 ```

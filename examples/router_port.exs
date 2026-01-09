@@ -1,8 +1,36 @@
 # Example: Implementing the Router port
 # Run: mix run examples/router_port.exs
 
-defmodule Examples.DummyLLM do
+defmodule Examples.EchoLLM do
   @moduledoc false
+  @behaviour PortfolioCore.Ports.LLM
+
+  @impl true
+  def complete(messages, _opts) do
+    content =
+      messages
+      |> Enum.reverse()
+      |> Enum.find_value("", fn message ->
+        Map.get(message, :content) || Map.get(message, "content")
+      end)
+
+    {:ok,
+     %{
+       content: "echo: #{content}",
+       model: "echo-1",
+       usage: %{input_tokens: 0, output_tokens: 0},
+       finish_reason: :stop
+     }}
+  end
+
+  @impl true
+  def stream(_messages, _opts), do: {:error, :streaming_not_supported}
+
+  @impl true
+  def supported_models, do: ["echo-1"]
+
+  @impl true
+  def model_info(_model), do: %{context_window: 1024, max_output: 128, supports_tools: false}
 end
 
 defmodule Examples.SimpleRouter do
@@ -137,7 +165,7 @@ IO.puts("=" |> String.duplicate(60))
 :ok =
   Examples.SimpleRouter.register_provider(%{
     name: :primary,
-    module: Examples.DummyLLM,
+    module: Examples.EchoLLM,
     config: %{model: "gpt-4o-mini"},
     capabilities: [:generation, :code],
     priority: 1,
@@ -148,7 +176,7 @@ IO.puts("=" |> String.duplicate(60))
 :ok =
   Examples.SimpleRouter.register_provider(%{
     name: :backup,
-    module: Examples.DummyLLM,
+    module: Examples.EchoLLM,
     config: %{model: "gpt-4o-mini"},
     capabilities: [:generation],
     priority: 2,

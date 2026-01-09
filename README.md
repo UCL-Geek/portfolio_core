@@ -59,7 +59,7 @@ Add `portfolio_core` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:portfolio_core, "~> 0.3.1"}
+    {:portfolio_core, "~> 0.4.0"}
   ]
 end
 ```
@@ -153,14 +153,28 @@ Adapters interpret `:tokens` using their own token estimation (typically ~4 char
 
 The registry now supports:
 - Adapter metadata and capabilities
+- CrucibleIR-compatible backend capability metadata
 - Health status tracking
 - Call metrics and error rates
 
 ```elixir
 # Register with capabilities
 PortfolioCore.Registry.register(:llm, MyLLM, config, %{
-  capabilities: [:generation, :streaming]
+  capabilities: [:generation, :streaming],
+  backend_capabilities: %{
+    backend_id: :openai,
+    provider: "openai",
+    models: ["gpt-4o-mini"],
+    default_model: "gpt-4o-mini",
+    supports_vision: true,
+    cost_per_million_input: 5.0,
+    cost_per_million_output: 15.0
+  }
 })
+
+# Fetch backend capabilities (PortfolioCore.Backend.Capabilities)
+{:ok, caps} = PortfolioCore.Registry.backend_capabilities(:llm)
+backend_ir = PortfolioCore.Backend.Capabilities.to_backend_ir(caps)
 
 # Find by capability
 PortfolioCore.Registry.find_by_capability(:streaming)

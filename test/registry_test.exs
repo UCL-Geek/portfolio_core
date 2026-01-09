@@ -148,4 +148,29 @@ defmodule PortfolioCore.RegistryTest do
       assert metrics.error_count == 1
     end
   end
+
+  describe "backend capabilities" do
+    defmodule CapabilityAdapter do
+      def capabilities(_config) do
+        %{
+          backend_id: :openai,
+          provider: "openai",
+          supports_audio: true
+        }
+      end
+    end
+
+    test "returns mapped backend capabilities for a registered port" do
+      Registry.register(:llm, CapabilityAdapter, %{})
+
+      assert {:ok, caps} = Registry.backend_capabilities(:llm)
+      assert caps.backend_id == :openai
+      assert caps.provider == "openai"
+      assert caps.supports_audio == true
+    end
+
+    test "returns error when port is not registered" do
+      assert {:error, :not_found} = Registry.backend_capabilities(:missing_port)
+    end
+  end
 end

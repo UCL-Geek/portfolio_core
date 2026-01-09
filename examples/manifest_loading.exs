@@ -4,60 +4,174 @@
 # This example demonstrates manifest-based configuration
 # using the PortfolioCore manifest engine.
 
-defmodule Examples.DummyVectorStore do
-  @moduledoc "A dummy adapter for demonstration"
+defmodule Examples.ManifestVectorStore do
+  @moduledoc "In-memory vector store adapter for the manifest demo."
   @behaviour PortfolioCore.Ports.VectorStore
 
-  @impl true
-  def create_index(_id, _config), do: :ok
-  @impl true
-  def delete_index(_id), do: :ok
-  @impl true
-  def store(_idx, _id, _vec, _meta), do: :ok
-  @impl true
-  def store_batch(_idx, _items), do: {:ok, 0}
-  @impl true
-  def search(_idx, _vec, _k, _opts), do: {:ok, []}
-  @impl true
-  def delete(_idx, _id), do: :ok
-  @impl true
-  def index_stats(_idx), do: {:ok, %{count: 0, dimensions: 0, metric: :cosine, size_bytes: nil}}
-end
+  use Agent
 
-defmodule Examples.DummyEmbedder do
-  @moduledoc "A dummy embedder for demonstration"
-  @behaviour PortfolioCore.Ports.Embedder
-
-  @impl true
-  def embed(_text, _opts) do
-    {:ok,
-     %{
-       vector: List.duplicate(0.1, 1536),
-       model: "demo-model",
-       dimensions: 1536,
-       token_count: 10
-     }}
+  def start_link(_opts) do
+    Agent.start_link(fn -> %{} end, name: __MODULE__)
   end
 
   @impl true
-  def embed_batch(texts, _opts) do
+  def create_index(index_id, config) do
+    Agent.update(__MODULE__, fn state ->
+      Map.put(state, index_id, %{config: config, vectors: %{}})
+    end)
+
+    :ok
+  end
+
+  @impl true
+  def delete_index(index_id) do
+    Agent.update(__MODULE__, &Map.delete(&1, index_id))
+    :ok
+  end
+
+  @impl true
+  def store(index_id, id, vector, metadata) do
+    Agent.update(__MODULE__, fn state ->
+      update_in(state, [index_id, :vectors], fn vectors ->
+        Map.put(vectors || %{}, id, %{vector: vector, metadata: metadata})
+      end)
+    end)
+
+    :ok
+  end
+
+  @impl true
+  def store_batch(index_id, items) do
+    Enum.each(items, fn {id, vector, metadata} ->
+      store(index_id, id, vector, metadata)
+    end)
+
+    {:ok, length(items)}
+  end
+
+  @impl true
+  def search(index_id, query_vector, k, _opts) do
+    vectors =
+      Agent.get(__MODULE__, fn state ->
+        get_in(state, [index_id, :vectors]) || %{}
+      end)
+
+    results =
+      vectors
+      |> Enum.map(fn {id, %{vector: vec, metadata: meta}} ->
+        %{id: id, score: cosine_similarity(query_vector, vec), metadata: meta, vector: nil}
+      end)
+      |> Enum.sort_by(& &1.score, :desc)
+      |> Enum.take(k)
+
+    {:ok, results}
+  end
+
+  @impl true
+  def delete(index_id, id) do
+    Agent.update(__MODULE__, fn state ->
+      update_in(state, [index_id, :vectors], &Map.delete(&1 || %{}, id))
+    end)
+
+    :ok
+  end
+
+  @impl true
+  def index_stats(index_id) do
+    case Agent.get(__MODULE__, &Map.get(&1, index_id)) do
+      nil ->
+        {:error, :not_found}
+
+      index ->
+        count = map_size(index.vectors || %{})
+
+        {:ok,
+         %{
+           count: count,
+           dimensions: index.config[:dimensions] || 0,
+           metric: index.config[:metric] || :cosine,
+           size_bytes: nil
+         }}
+    end
+  end
+
+  @impl true
+  def index_exists?(index_id) do
+    Agent.get(__MODULE__, fn state ->
+      Map.has_key?(state, index_id)
+    end)
+  end
+
+  defp cosine_similarity(a, b) do
+    dot = Enum.zip(a, b) |> Enum.map(fn {x, y} -> x * y end) |> Enum.sum()
+    mag_a = :math.sqrt(Enum.map(a, &(&1 * &1)) |> Enum.sum())
+    mag_b = :math.sqrt(Enum.map(b, &(&1 * &1)) |> Enum.sum())
+
+    if mag_a == 0 or mag_b == 0 do
+      0.0
+    else
+      dot / (mag_a * mag_b)
+    end
+  end
+end
+
+defmodule Examples.ManifestEmbedder do
+  @moduledoc "Deterministic embedder for the manifest demo."
+  @behaviour PortfolioCore.Ports.Embedder
+
+  @default_model "manifest-embedder"
+  @default_dimensions 16
+
+  @impl true
+  def embed(text, opts) do
+    opts = normalize_opts(opts)
+    model = Keyword.get(opts, :model, @default_model)
+    dimensions = Keyword.get(opts, :dimensions, @default_dimensions)
+    vector = hash_to_vector(text, dimensions)
+
+    {:ok, %{vector: vector, model: model, dimensions: dimensions, token_count: token_count(text)}}
+  end
+
+  @impl true
+  def embed_batch(texts, opts) do
+    opts = normalize_opts(opts)
+    model = Keyword.get(opts, :model, @default_model)
+    dimensions = Keyword.get(opts, :dimensions, @default_dimensions)
+
     embeddings =
-      Enum.map(texts, fn _ ->
+      Enum.map(texts, fn text ->
         %{
-          vector: List.duplicate(0.1, 1536),
-          model: "demo-model",
-          dimensions: 1536,
-          token_count: 5
+          vector: hash_to_vector(text, dimensions),
+          model: model,
+          dimensions: dimensions,
+          token_count: token_count(text)
         }
       end)
 
-    {:ok, %{embeddings: embeddings, total_tokens: length(texts) * 5}}
+    {:ok, %{embeddings: embeddings, total_tokens: Enum.sum(Enum.map(texts, &token_count/1))}}
   end
 
   @impl true
-  def dimensions(_model), do: 1536
+  def dimensions(_model), do: @default_dimensions
   @impl true
-  def supported_models, do: ["demo-model"]
+  def supported_models, do: [@default_model]
+
+  defp normalize_opts(opts) when is_map(opts), do: Map.to_list(opts)
+  defp normalize_opts(opts) when is_list(opts), do: opts
+  defp normalize_opts(_opts), do: []
+
+  defp hash_to_vector(text, dimensions) do
+    bytes = :crypto.hash(:sha256, text) |> :binary.bin_to_list()
+
+    bytes
+    |> Stream.cycle()
+    |> Enum.take(dimensions)
+    |> Enum.map(&(&1 / 255.0))
+  end
+
+  defp token_count(text) do
+    text |> String.split() |> length()
+  end
 end
 
 IO.puts("=" |> String.duplicate(60))
@@ -70,15 +184,16 @@ version: "1.0"
 environment: development
 adapters:
   vector_store:
-    adapter: Examples.DummyVectorStore
+    adapter: Examples.ManifestVectorStore
     config:
       dimensions: 1536
       metric: cosine
   embedder:
-    adapter: Examples.DummyEmbedder
+    adapter: Examples.ManifestEmbedder
     config:
       model: demo-model
       batch_size: 100
+      dimensions: 16
 telemetry:
   enabled: true
 """
@@ -134,7 +249,7 @@ version: "1.0"
 environment: production
 adapters:
   embedder:
-    adapter: Examples.DummyEmbedder
+    adapter: Examples.ManifestEmbedder
     config:
       api_key: ${EXAMPLE_API_KEY}
       model: production-model
